@@ -6,6 +6,27 @@ function isSmtpConfigured() {
   return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
 }
 
+let smtpProbe = { at: 0, ok: false };
+
+async function smtpPronto() {
+  if (!isSmtpConfigured()) {
+    return false;
+  }
+  const now = Date.now();
+  if (now - smtpProbe.at < 30000) {
+    return smtpProbe.ok;
+  }
+  try {
+    await getTransporter().verify();
+    smtpProbe = { at: now, ok: true };
+    return true;
+  } catch (err) {
+    console.error("SMTP:", err.message);
+    smtpProbe = { at: now, ok: false };
+    return false;
+  }
+}
+
 function getTransporter() {
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -335,6 +356,7 @@ async function sendRecuperacaoSenha({ nome, email, link, contaLabel }) {
 
 module.exports = {
   isSmtpConfigured,
+  smtpPronto,
   sendCadastroConfirmacao,
   sendInscricaoConfirmacao,
   sendParceiroCadastroRecebido,

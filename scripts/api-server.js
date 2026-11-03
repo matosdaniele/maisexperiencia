@@ -16,6 +16,7 @@ const {
   sendContratacaoAdmin,
   sendLembreteMedicacao,
   sendRecuperacaoSenha,
+  smtpPronto,
 } = require("./mail");
 const {
   isTelegramConfigured,
@@ -4030,6 +4031,8 @@ app.post("/api/parceiros/ativacao", async (req, res) => {
 const RESET_TTL_MS = 60 * 60 * 1000;
 const RESET_MESSAGE =
   "Se este e-mail estiver cadastrado, enviaremos um link para redefinir a senha. Verifique também a caixa de spam.";
+const RESET_EMAIL_INDISPONIVEL =
+  "Não foi possível enviar o e-mail de recuperação agora. Tente novamente em instantes.";
 const RESET_LINK_INVALIDO =
   "Link inválido ou expirado. Solicite um novo e-mail de recuperação.";
 const resetRequestLog = new Map();
@@ -4138,6 +4141,11 @@ async function solicitarRecuperacaoSenha(req, res, options) {
     return;
   }
 
+  if (!(await smtpPronto())) {
+    res.status(503).json({ ok: false, error: RESET_EMAIL_INDISPONIVEL });
+    return;
+  }
+
   const permitido =
     noteResetRequest("ip:" + clientIp(req), 20) &&
     noteResetRequest("email:" + options.perfil + ":" + email, 5);
@@ -4160,6 +4168,7 @@ async function solicitarRecuperacaoSenha(req, res, options) {
       }
     );
 
+    let enviado = false;
     try {
       const result = await sendRecuperacaoSenha({
         nome: doc.nome,
@@ -4167,11 +4176,20 @@ async function solicitarRecuperacaoSenha(req, res, options) {
         link: buildResetLink(options.perfil, token, destino),
         contaLabel: options.contaLabel,
       });
-      if (!result.sent) {
+      enviado = Boolean(result.sent);
+      if (!enviado) {
         console.error("Recuperação de senha não enviada (" + options.perfil + "):", result.reason);
       }
     } catch (err) {
       console.error("Recuperação de senha:", err.message);
+    }
+    if (!enviado) {
+      await db.collection(options.collection).updateOne(
+        { _id: doc._id },
+        { $unset: { resetTokenHash: "", resetTokenExpires: "" } }
+      );
+      res.status(503).json({ ok: false, error: RESET_EMAIL_INDISPONIVEL });
+      return;
     }
   }
 

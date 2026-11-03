@@ -39,6 +39,7 @@
   }
 
   if (!config) {
+    escolha.hidden = false;
     ME_ANALYTICS.track("recuperar_senha_inicio", { page: "recuperar_senha" });
     return;
   }
@@ -47,7 +48,7 @@
   lead.textContent = config.lead;
   backLink.href = loginUrl();
   backLink.textContent = config.voltarLabel;
-  escolha.hidden = true;
+  escolha.remove();
   form.hidden = false;
 
   var emailParam = ME_APP.getQueryParam("email");
