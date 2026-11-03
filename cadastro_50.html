@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Cadastro — Mais Experiência para pessoas 50+">
+  <title>Cadastro — Mais Experiência</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app-page.css?v=35">
+  <link rel="stylesheet" href="css/a11y-bar.css?v=14">
+  <script src="js/site-config.js"></script>
+  <script src="js/app-common.js?v=12"></script>
+  <script src="js/analytics.js?v=4"></script>
+</head>
+<body>
+  <main class="wrap">
+    <a class="back-link" href="entrar.html">← Voltar</a>
+    <h1>Quero me cadastrar</h1>
+    <p class="lead">Preencha os dados abaixo para iniciar seu cadastro na Mais Experiência.</p>
+
+    <div id="convite-banner" class="feedback feedback--ok" role="status" hidden></div>
+    <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+
+    <form id="form-cadastro" novalidate>
+      <div>
+        <label for="nome">Nome completo</label>
+        <input id="nome" name="nome" type="text" autocomplete="name" required minlength="2">
+      </div>
+      <div>
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" autocomplete="email" required>
+      </div>
+      <div>
+        <label for="dataNascimento">Data de nascimento</label>
+        <input id="dataNascimento" name="dataNascimento" type="date" autocomplete="bday" required>
+        <p class="field-hint">Cadastro exclusivo para pessoas com 50 anos ou mais.</p>
+      </div>
+      <div>
+        <label for="telefone">Telefone <span class="label-optional">(opcional)</span></label>
+        <input id="telefone" name="telefone" type="tel" autocomplete="tel" inputmode="tel">
+      </div>
+      <div>
+        <label for="senha">Senha</label>
+        <input id="senha" name="senha" type="password" autocomplete="new-password" required minlength="6">
+        <p class="field-hint">Mínimo de 6 caracteres, cumprindo pelo menos 2 regras: conter letra, número ou caractere especial.</p>
+      </div>
+      <div class="checkbox-row checkbox-row--consent">
+        <input id="consentimento-dados" name="consentimentoDados" type="checkbox" required>
+        <label for="consentimento-dados">
+          Usaremos seus dados para conectar você a oportunidades de trabalho e cursos. Você pode pedir a exclusão a qualquer momento. Para maiores detalhes consulte:
+          <a class="link-inline" href="legal/termos-de-uso.html" target="_blank" rel="noopener">Termos de uso</a>,
+          <a class="link-inline" href="legal/politica-de-privacidade.html" target="_blank" rel="noopener">Política de privacidade</a> e
+          <a class="link-inline" href="legal/politica-seguranca-informacao.html" target="_blank" rel="noopener">Política de Segurança da Informação</a>.
+        </label>
+      </div>
+      <button type="submit" class="btn" id="btn-enviar">Enviar cadastro</button>
+    </form>
+
+    <p class="form-footer-link">Já tem cadastro? <a class="link-inline" id="link-entrar" href="entrar_50.html">Entrar</a></p>
+  </main>
+
+  <script>
+    (function () {
+      var apiBase = ME_APP.getApiBase();
+      var form = document.getElementById("form-cadastro");
+      var feedback = document.getElementById("feedback");
+      var btn = document.getElementById("btn-enviar");
+
+      ME_ANALYTICS.track("cadastro_inicio", { page: "cadastro_50" });
+
+      var codigoConvite = (ME_APP.getQueryParam("c") || "").trim().toUpperCase();
+
+      var linkEntrar = document.getElementById("link-entrar");
+      if (linkEntrar) {
+        var entrarUrl = ME_APP.buildAuthUrl("entrar_50.html", ME_APP.getQueryParam("destino"));
+        if (codigoConvite) {
+          entrarUrl += (entrarUrl.indexOf("?") >= 0 ? "&" : "?") + "c=" + encodeURIComponent(codigoConvite);
+        }
+        linkEntrar.href = entrarUrl;
+      }
+
+      if (codigoConvite) {
+        var conviteBanner = document.getElementById("convite-banner");
+        var apiBaseConvite = ME_APP.getApiBase();
+        fetch(apiBaseConvite + "/api/convites/" + encodeURIComponent(codigoConvite))
+          .then(function (response) { return response.json(); })
+          .then(function (data) {
+            if (data && data.ok && data.convite && conviteBanner) {
+              conviteBanner.hidden = false;
+              conviteBanner.textContent =
+                "Você foi convidado para a comunidade \"" + data.convite.titulo +
+                "\". Ao concluir o cadastro, você entra automaticamente.";
+            }
+          })
+          .catch(function () {});
+      }
+
+      var dataNascimento = document.getElementById("dataNascimento");
+      if (dataNascimento) {
+        var hoje = new Date();
+        var maxDate = hoje.getFullYear() + "-" +
+          String(hoje.getMonth() + 1).padStart(2, "0") + "-" +
+          String(hoje.getDate()).padStart(2, "0");
+        dataNascimento.max = maxDate;
+      }
+
+      function showFeedback(message, type) {
+        feedback.hidden = false;
+        feedback.textContent = message;
+        feedback.className = "feedback feedback--" + type;
+      }
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        feedback.hidden = true;
+
+        var payload = {
+          nome: form.nome.value.trim(),
+          email: form.email.value.trim(),
+          dataNascimento: form.dataNascimento.value,
+          telefone: form.telefone.value.trim(),
+          senha: form.senha.value,
+          consentimentoDados: form.consentimentoDados.checked,
+          codigoConvite: codigoConvite || undefined,
+        };
+
+        if (!payload.consentimentoDados) {
+          showFeedback("É necessário aceitar o uso dos seus dados para concluir o cadastro.", "erro");
+          return;
+        }
+
+        var idadeCheck = ME_APP.validateIdadeMinima50(payload.dataNascimento);
+        if (!idadeCheck.ok) {
+          showFeedback(idadeCheck.error, "erro");
+          return;
+        }
+
+        var senhaCheck = ME_APP.validateSenha(payload.senha);
+        if (!senhaCheck.ok) {
+          showFeedback(senhaCheck.error, "erro");
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = "Enviando…";
+        ME_ANALYTICS.track("cadastro_submit", { page: "cadastro_50" });
+
+        fetch(apiBase + "/api/contas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+          .then(function (response) {
+            return response.json().then(function (data) {
+              return { ok: response.ok, status: response.status, data: data };
+            });
+          })
+          .then(function (result) {
+            if (result.ok) {
+              ME_APP.saveSession({
+                nome: payload.nome,
+                email: payload.email.toLowerCase(),
+                token: result.data.token || "",
+              });
+              ME_ANALYTICS.track("cadastro_sucesso", { page: "cadastro_50" });
+              showFeedback("Cadastro realizado! Redirecionando…", "ok");
+              setTimeout(function () {
+                window.location.href = ME_APP.resolveRedirectAfterAuth();
+              }, 1200);
+              return;
+            }
+            ME_ANALYTICS.track("cadastro_erro", {
+              page: "cadastro_50",
+              status: result.status,
+            });
+            showFeedback(result.data.error || "Não foi possível concluir o cadastro.", "erro");
+          })
+          .catch(function () {
+            ME_ANALYTICS.track("cadastro_erro", { page: "cadastro_50", motivo: "rede" });
+            showFeedback("Não foi possível contatar a API. Tente novamente em instantes.", "erro");
+          })
+          .finally(function () {
+            btn.disabled = false;
+            btn.textContent = "Enviar cadastro";
+          });
+      });
+    })();
+  </script>
+  <script src="js/site-brand.js?v=2"></script>
+  <script src="js/public-page-shell.js?v=3"></script>
+  <script src="js/a11y-bar.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Publique curso, comunidade ou bem-estar para pessoas 50+ — Mais Experiência">
+  <title>Publicar oferta — Mais Experiência</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app-page.css?v=35">
+  <link rel="stylesheet" href="css/a11y-bar.css?v=14">
+  <script src="js/site-config.js"></script>
+  <script src="js/app-common.js?v=12"></script>
+  <script src="js/analytics.js?v=4"></script>
+</head>
+<body>
+  <main class="wrap">
+    <a class="back-link" id="back-link" href="area_parceiro.html">← Voltar à área do parceiro</a>
+    <h1 id="page-title">Publicar oferta</h1>
+    <p class="lead" id="page-lead">Envie sua oferta para curadoria.</p>
+
+    <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+
+    <form id="form-oferta" novalidate>
+      <div>
+        <label for="parceiro">Empresa ou organização</label>
+        <input id="parceiro" name="parceiro" type="text" required minlength="2">
+      </div>
+      <div>
+        <label for="titulo" id="label-titulo">Título</label>
+        <input id="titulo" name="titulo" type="text" required minlength="3">
+      </div>
+      <div>
+        <label for="descricao">Descrição</label>
+        <textarea id="descricao" name="descricao" required minlength="40"></textarea>
+      </div>
+      <div>
+        <label for="valorInscricaoBrl">Valor da inscrição (R$)</label>
+        <input id="valorInscricaoBrl" name="valorInscricaoBrl" type="number" required min="0" step="0.01" placeholder="Ex.: 49.90">
+        <p class="field-hint">Use 0 para ofertas gratuitas.</p>
+      </div>
+      <div>
+        <label for="modalidade">Modalidade</label>
+        <select id="modalidade" name="modalidade" required>
+          <option value="">Selecione…</option>
+          <option value="presencial">Presencial</option>
+          <option value="hibrido">Híbrido</option>
+          <option value="remoto">Remoto</option>
+        </select>
+      </div>
+      <div>
+        <label for="local">Local</label>
+        <input id="local" name="local" type="text" placeholder="Cidade/UF ou Remoto — Brasil">
+      </div>
+      <div id="campo-referencia" hidden>
+        <label for="referencia">Referência</label>
+        <input id="referencia" name="referencia" type="text" placeholder="Ex.: Próximo ao Metrô Central · Sala 204">
+        <p class="field-hint">Ponto de referência ou indicação para chegar ao local.</p>
+      </div>
+      <div id="campo-data-evento" hidden>
+        <label for="dataTexto">Data do encontro</label>
+        <input id="dataTexto" name="dataTexto" type="text" placeholder="Ex.: 15/08/2026 · 14h">
+      </div>
+      <div id="campo-data-curso" hidden>
+        <label for="dataPublicacao" id="label-data-curso">Data de início do curso</label>
+        <input id="dataPublicacao" name="dataPublicacao" type="date">
+        <p class="field-hint" id="hint-data-curso">Data em que o curso começa.</p>
+      </div>
+      <div id="campo-vigencia-inicio">
+        <label for="dataInicio">Data de início da publicação</label>
+        <input id="dataInicio" name="dataInicio" type="date" required>
+        <p class="field-hint">Primeiro dia em que a oferta fica visível para o público 50+.</p>
+      </div>
+      <div id="campo-vigencia-fim">
+        <label for="dataFim">Data de fim da publicação</label>
+        <input id="dataFim" name="dataFim" type="date" required>
+        <p class="field-hint" id="hint-vigencia-fim">Último dia em que a oferta permanece visível na plataforma.</p>
+      </div>
+      <div id="campo-hora" hidden>
+        <label for="hora">Hora</label>
+        <input id="hora" name="hora" type="time" required>
+        <p class="field-hint">Horário de início do curso.</p>
+      </div>
+      <div>
+        <label for="nomeContatoParceiro">Nome do responsável <span class="label-optional">(opcional)</span></label>
+        <input id="nomeContatoParceiro" name="nomeContatoParceiro" type="text">
+      </div>
+      <div>
+        <label for="emailContatoParceiro">E-mail de contato</label>
+        <input id="emailContatoParceiro" name="emailContatoParceiro" type="email" required>
+      </div>
+      <button type="submit" class="btn" id="btn-enviar">Enviar para curadoria</button>
+    </form>
+  </main>
+
+  <script>
+    (function () {
+      var TIPOS = {
+        curso: {
+          titulo: "Publicar curso",
+          lead: "Envie o curso para curadoria. Publicamos apenas conteúdos adequados ao público 50+, com linguagem acessível.",
+          labelTitulo: "Título do curso",
+          placeholderTitulo: "Ex.: Excel para 50+",
+          placeholderDescricao: "Conteúdo programático, carga horária, público-alvo…",
+          analytics: "publicar_curso",
+        },
+        bem_estar: {
+          titulo: "Publicar bem-estar",
+          lead: "Envie o serviço ou programa de bem-estar para curadoria. Foco em longevidade activa e qualidade de vida.",
+          labelTitulo: "Título do serviço",
+          placeholderTitulo: "Ex.: Yoga suave para 50+",
+          placeholderDescricao: "Benefícios, formato das sessões, requisitos…",
+          analytics: "publicar_bem_estar",
+        },
+        evento: {
+          titulo: "Publicar comunidade",
+          lead: "Envie a atividade de comunidade para curadoria. Workshops, encontros e feiras com foco no público 50+.",
+          labelTitulo: "Título",
+          placeholderTitulo: "Ex.: Feira de empregabilidade 50+",
+          placeholderDescricao: "Programação, público esperado, como participar…",
+          analytics: "publicar_evento",
+        },
+      };
+
+      var params = new URLSearchParams(window.location.search);
+      var tipo = params.get("tipo") || "";
+      var config = TIPOS[tipo];
+
+      if (!config) {
+        window.location.href = "area_parceiro.html";
+        return;
+      }
+
+      document.getElementById("page-title").textContent = config.titulo;
+      document.title = config.titulo + " — Mais Experiência";
+      document.getElementById("page-lead").textContent = config.lead;
+      var backLink = document.getElementById("back-link");
+      if (backLink) {
+        backLink.href = "pilar_parceiro.html?tipo=" + encodeURIComponent(tipo);
+      }
+      document.getElementById("label-titulo").textContent = config.labelTitulo;
+      document.getElementById("titulo").placeholder = config.placeholderTitulo;
+      document.getElementById("descricao").placeholder = config.placeholderDescricao;
+
+      var campoReferencia = document.getElementById("campo-referencia");
+      var campoDataEvento = document.getElementById("campo-data-evento");
+      var campoDataCurso = document.getElementById("campo-data-curso");
+      var campoHora = document.getElementById("campo-hora");
+      var inputDataCurso = document.getElementById("dataPublicacao");
+      var inputHora = document.getElementById("hora");
+
+      if (tipo === "curso") {
+        campoReferencia.hidden = false;
+        campoDataCurso.hidden = false;
+        campoHora.hidden = false;
+        inputDataCurso.required = true;
+        inputHora.required = true;
+      } else if (tipo === "evento") {
+        campoDataEvento.hidden = false;
+      }
+
+      var apiBase = ME_APP.getApiBase();
+      var form = document.getElementById("form-oferta");
+      var feedback = document.getElementById("feedback");
+      var btn = document.getElementById("btn-enviar");
+
+      var sessao = ME_APP.ensureParceiroSession();
+      if (!sessao) return;
+
+      if (sessao.empresa) {
+        form.parceiro.value = sessao.empresa;
+      }
+      if (sessao.email) {
+        form.emailContatoParceiro.value = sessao.email;
+      }
+      if (sessao.nome) {
+        form.nomeContatoParceiro.value = sessao.nome;
+      }
+
+      ME_ANALYTICS.track(config.analytics + "_inicio", { page: "publicar_oferta", tipo: tipo });
+
+      function showFeedback(message, type) {
+        feedback.hidden = false;
+        feedback.textContent = message;
+        feedback.className = "feedback feedback--" + type;
+      }
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        feedback.hidden = true;
+        btn.disabled = true;
+        btn.textContent = "Enviando…";
+
+        if (!form.dataInicio.value || !form.dataFim.value) {
+          showFeedback("Informe a data de início e a data de fim da publicação.", "erro");
+          btn.disabled = false;
+          btn.textContent = "Enviar para curadoria";
+          return;
+        }
+        if (form.dataFim.value < form.dataInicio.value) {
+          showFeedback("A data de fim deve ser igual ou posterior à data de início.", "erro");
+          btn.disabled = false;
+          btn.textContent = "Enviar para curadoria";
+          return;
+        }
+        if (tipo === "curso" && !form.dataPublicacao.value) {
+          showFeedback("Informe a data de início do curso.", "erro");
+          btn.disabled = false;
+          btn.textContent = "Enviar para curadoria";
+          return;
+        }
+
+        var payload = {
+          tipo: tipo,
+          parceiro: form.parceiro.value.trim(),
+          titulo: form.titulo.value.trim(),
+          descricao: form.descricao.value.trim(),
+          valorInscricaoBrl: Number(form.valorInscricaoBrl.value),
+          modalidade: form.modalidade.value,
+          local: form.local.value.trim(),
+          referencia: form.referencia.value.trim(),
+          dataTexto: form.dataTexto.value.trim(),
+          dataInicio: form.dataInicio.value,
+          dataFim: form.dataFim.value,
+          dataPublicacao: tipo === "curso" ? form.dataPublicacao.value : "",
+          hora: form.hora.value,
+          nomeContatoParceiro: form.nomeContatoParceiro.value.trim(),
+          emailContatoParceiro: form.emailContatoParceiro.value.trim(),
+        };
+
+        fetch(apiBase + "/api/ofertas", {
+          method: "POST",
+          headers: ME_APP.authJsonHeaders(),
+          body: JSON.stringify(payload),
+        })
+          .then(function (response) {
+            return response.json().then(function (data) {
+              return { ok: response.ok, data: data };
+            });
+          })
+          .then(function (result) {
+            if (result.ok) {
+              ME_ANALYTICS.track(config.analytics + "_sucesso", { page: "publicar_oferta", tipo: tipo });
+              showFeedback("Enviado! Redirecionando para a sua área…", "ok");
+              setTimeout(function () {
+                window.location.href = "area_parceiro.html";
+              }, 1200);
+              return;
+            }
+            showFeedback(result.data.error || "Não foi possível enviar.", "erro");
+            btn.disabled = false;
+            btn.textContent = "Enviar para curadoria";
+          })
+          .catch(function () {
+            showFeedback("Erro de conexão. Tente novamente.", "erro");
+            btn.disabled = false;
+            btn.textContent = "Enviar para curadoria";
+          });
+      });
+    })();
+  </script>
+  <script src="js/site-brand.js?v=2"></script>
+  <script src="js/app-shell.js?v=23"></script>
+  <script src="js/a11y-bar.js?v=1"></script>
+</body>
+</html>

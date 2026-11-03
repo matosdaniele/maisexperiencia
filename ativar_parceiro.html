@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Finalizar cadastro de parceiro — Mais Experiência">
+  <title>Finalizar cadastro — Parceiro</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app-page.css?v=35">
+  <link rel="stylesheet" href="css/a11y-bar.css?v=14">
+  <script src="js/site-config.js"></script>
+  <script src="js/app-common.js?v=12"></script>
+  <script src="js/analytics.js?v=4"></script>
+</head>
+<body>
+  <main class="wrap">
+    <a class="back-link" href="entrar.html">← Voltar</a>
+    <h1>Finalizar cadastro</h1>
+    <p class="lead" id="lead">Crie sua senha para concluir o cadastro de parceiro.</p>
+
+    <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+
+    <div id="loading" class="card">A validar o seu link…</div>
+
+    <form id="form-ativar" novalidate hidden>
+      <p class="field-hint field-hint--spaced-bottom" id="perfil-resumo"></p>
+      <div>
+        <label for="senha">Senha</label>
+        <input id="senha" name="senha" type="password" autocomplete="new-password" required minlength="6">
+        <p class="field-hint">Mínimo de 6 caracteres, cumprindo pelo menos 2 regras: conter letra, número ou caractere especial.</p>
+      </div>
+      <div class="checkbox-row checkbox-row--consent">
+        <input id="consentimento-lgpd" name="consentimentoLgpd" type="checkbox" required>
+        <label for="consentimento-lgpd">
+          Ao me cadastrar como empresa, declaro que aceito
+          <a class="link-inline" href="legal/termo-consentimento-lgpd-empresas.html" target="_blank" rel="noopener">Termo de Consentimento LGPD</a> e
+          <a class="link-inline" href="legal/politica-seguranca-informacao.html" target="_blank" rel="noopener">Política de Segurança da Informação</a>.
+        </label>
+      </div>
+      <button type="submit" class="btn" id="btn-ativar">Concluir cadastro</button>
+    </form>
+  </main>
+
+  <script>
+    (function () {
+      var apiBase = ME_APP.getApiBase();
+      var params = new URLSearchParams(window.location.search);
+      var token = params.get("token") || "";
+      var form = document.getElementById("form-ativar");
+      var feedback = document.getElementById("feedback");
+      var loading = document.getElementById("loading");
+      var lead = document.getElementById("lead");
+      var perfilResumo = document.getElementById("perfil-resumo");
+      var btn = document.getElementById("btn-ativar");
+
+      function showFeedback(message, type) {
+        feedback.hidden = false;
+        feedback.textContent = message;
+        feedback.className = "feedback feedback--" + type;
+      }
+
+      if (!token) {
+        loading.hidden = true;
+        showFeedback("Link inválido. Verifique o e-mail recebido ou contacte contato@maisexperiencia.com.br.", "erro");
+        return;
+      }
+
+      fetch(apiBase + "/api/parceiros/ativacao?token=" + encodeURIComponent(token))
+        .then(function (response) {
+          return response.json().then(function (data) {
+            return { ok: response.ok, data: data };
+          });
+        })
+        .then(function (result) {
+          loading.hidden = true;
+          if (!result.ok) {
+            lead.hidden = true;
+            showFeedback(result.data.error || "Link inválido.", "erro");
+            return;
+          }
+          var perfil = result.data.perfil;
+          perfilResumo.textContent = perfil.empresa + " · " + perfil.nome + " · " + perfil.email;
+          form.hidden = false;
+        })
+        .catch(function () {
+          loading.hidden = true;
+          showFeedback("Não foi possível validar o link. Tente novamente em instantes.", "erro");
+        });
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        feedback.hidden = true;
+
+        var senhaCheck = ME_APP.validateSenha(form.senha.value);
+        if (!senhaCheck.ok) {
+          showFeedback(senhaCheck.error, "erro");
+          return;
+        }
+
+        if (!form.consentimentoLgpd.checked) {
+          showFeedback("É necessário aceitar o Termo de Consentimento LGPD para concluir o cadastro.", "erro");
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = "Salvando…";
+
+        fetch(apiBase + "/api/parceiros/ativacao", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            token: token,
+            senha: form.senha.value,
+            consentimentoLgpd: true,
+          }),
+        })
+          .then(function (response) {
+            return response.json().then(function (data) {
+              return { ok: response.ok, data: data };
+            });
+          })
+          .then(function (result) {
+            if (result.ok) {
+              var email = result.data.perfil && result.data.perfil.email;
+              form.hidden = true;
+              lead.textContent = "Cadastro concluído!";
+              showFeedback("Redirecionando para entrar na sua área de parceiro…", "ok");
+              setTimeout(function () {
+                var url = "entrar_parceiro.html?cadastro=1";
+                if (email) {
+                  url += "&email=" + encodeURIComponent(email);
+                }
+                window.location.href = url;
+              }, 1200);
+              return;
+            }
+            showFeedback(result.data.error || "Não foi possível concluir o cadastro.", "erro");
+          })
+          .catch(function () {
+            showFeedback("Não foi possível contatar a API. Tente novamente em instantes.", "erro");
+          })
+          .finally(function () {
+            btn.disabled = false;
+            btn.textContent = "Concluir cadastro";
+          });
+      });
+    })();
+  </script>
+  <script src="js/site-brand.js?v=2"></script>
+  <script src="js/public-page-shell.js?v=3"></script>
+  <script src="js/a11y-bar.js?v=1"></script>
+</body>
+</html>

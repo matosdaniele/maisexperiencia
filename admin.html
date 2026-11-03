@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Painel admin — Mais Experiência">
+  <title>Admin — Mais Experiência</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app-page.css?v=35">
+  <link rel="stylesheet" href="css/a11y-bar.css?v=14">
+  <script src="js/site-config.js"></script>
+  <script src="js/app-common.js?v=12"></script>
+  <script src="js/analytics.js?v=4"></script>
+  <script src="js/admin-hub.js?v=3"></script>
+</head>
+<body>
+  <main class="wrap wrap--admin">
+    <h1>Área admin</h1>
+    <p class="lead">Painel interno da equipe Mais Experiência.</p>
+
+    <div id="login-box" class="card">
+      <label for="admin-key">Senha de acesso da equipe</label>
+      <input id="admin-key" type="password" autocomplete="off">
+      <p class="actions"><button type="button" class="btn" id="btn-login">Entrar</button></p>
+    </div>
+
+    <div id="panel" hidden>
+      <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+
+      <div id="admin-hub-view">
+        <div class="pilares pilares--hub" aria-labelledby="admin-hub-title">
+          <h2 id="admin-hub-title" class="pilares-title pilares-title--hub">O que deseja gerir?</h2>
+          <ul class="pilares-grid" id="admin-hub-grid"></ul>
+        </div>
+      </div>
+
+      <div id="admin-curadoria-view" class="admin-curadoria-view" hidden>
+        <button type="button" class="back-link" id="admin-curadoria-back">← Voltar à área admin</button>
+        <div class="pilares pilares--hub" aria-labelledby="admin-curadoria-title">
+          <h2 id="admin-curadoria-title" class="pilares-title pilares-title--hub">Curadoria por pilar</h2>
+          <ul class="pilares-grid" id="admin-curadoria-grid"></ul>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var STORAGE_KEY = "me_admin_key";
+      var loginBox = document.getElementById("login-box");
+      var panel = document.getElementById("panel");
+      var feedback = document.getElementById("feedback");
+      var hubView = document.getElementById("admin-hub-view");
+      var curadoriaView = document.getElementById("admin-curadoria-view");
+      var resumoCache = { vagas: 0, ofertas: 0, parceiros: 0, inscricoes: 0, contratacoes: 0 };
+
+      function getKey() {
+        return sessionStorage.getItem(STORAGE_KEY) || "";
+      }
+
+      function setKey(value) {
+        sessionStorage.setItem(STORAGE_KEY, value);
+      }
+
+      function clearKey() {
+        sessionStorage.removeItem(STORAGE_KEY);
+      }
+
+      function showFeedback(message, type) {
+        feedback.hidden = false;
+        feedback.textContent = message;
+        feedback.className = "feedback feedback--" + type;
+      }
+
+      function setBadge(id, count) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        if (!count) {
+          el.hidden = true;
+          el.textContent = "";
+          return;
+        }
+        el.hidden = false;
+        el.textContent = String(count) + " pendente" + (count === 1 ? "" : "s");
+      }
+
+      function updateCuradoriaHubBadge() {
+        setBadge("badge-curadoria", resumoCache.vagas + resumoCache.ofertas);
+      }
+
+      function setBadgeContratacoes(id, count) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        if (!count) {
+          el.hidden = true;
+          el.textContent = "";
+          return;
+        }
+        el.hidden = false;
+        el.textContent = String(count) + " contrataç" + (count === 1 ? "ão" : "ões");
+      }
+
+      function applyResumoBadges() {
+        setBadge("badge-vagas", resumoCache.vagas);
+        setBadge("badge-ofertas", resumoCache.ofertas);
+        setBadge("badge-parceiros", resumoCache.parceiros);
+        setBadge("badge-inscricoes", resumoCache.inscricoes);
+        setBadgeContratacoes("badge-candidaturas", resumoCache.contratacoes);
+        updateCuradoriaHubBadge();
+      }
+
+      function buildCardInner(item) {
+        var badgeHtml = item.badgeId
+          ? '<span class="admin-badge pilar-card-badge" id="' + item.badgeId + '" hidden></span>'
+          : "";
+        if (item.view === "curadoria") {
+          badgeHtml = '<span class="admin-badge pilar-card-badge" id="badge-curadoria" hidden></span>';
+        }
+        return (
+          '<img class="pilar-card-icon" src="' + item.icon + '" alt="" width="64" height="64" decoding="async">' +
+          '<h3 class="pilar-card-title">' + item.titulo + badgeHtml + "</h3>"
+        );
+      }
+
+      function renderHubCards() {
+        var grid = document.getElementById("admin-hub-grid");
+        if (!grid || !window.ME_ADMIN_HUB) return;
+        grid.innerHTML = "";
+        ME_ADMIN_HUB.forEach(function (item) {
+          var li = document.createElement("li");
+          if (item.href) {
+            li.innerHTML =
+              '<a class="pilar-card pilar-card--link pilar-card--compact" href="' + item.href + '">' +
+              buildCardInner(item) +
+              "</a>";
+          } else if (item.view) {
+            li.innerHTML =
+              '<button type="button" class="pilar-card pilar-card--compact pilar-card--action" data-admin-view="' +
+              item.view +
+              '">' +
+              buildCardInner(item) +
+              "</button>";
+          }
+          grid.appendChild(li);
+        });
+        grid.querySelectorAll("[data-admin-view]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            showAdminView(btn.getAttribute("data-admin-view"));
+          });
+        });
+        applyResumoBadges();
+      }
+
+      function renderCuradoriaCards() {
+        var grid = document.getElementById("admin-curadoria-grid");
+        if (!grid || !window.ME_ADMIN_CURADORIA) return;
+        grid.innerHTML = "";
+        ME_ADMIN_CURADORIA.forEach(function (item) {
+          var li = document.createElement("li");
+          li.innerHTML =
+            '<a class="pilar-card pilar-card--link pilar-card--compact" href="' + item.href + '">' +
+            buildCardInner(item) +
+            "</a>";
+          grid.appendChild(li);
+        });
+        applyResumoBadges();
+      }
+
+      function showAdminView(view) {
+        var isCuradoria = view === "curadoria";
+        hubView.hidden = isCuradoria;
+        curadoriaView.hidden = !isCuradoria;
+        if (window.history && window.history.replaceState) {
+          var url = isCuradoria ? "admin.html?secao=curadoria" : "admin.html";
+          window.history.replaceState({ adminView: view }, "", url);
+        }
+      }
+
+      function loadResumo() {
+        var key = getKey();
+        if (!key || !window.ME_APP) return;
+        fetch(ME_APP.getApiBase() + "/api/admin/resumo", {
+          headers: { "x-admin-key": key },
+        })
+          .then(function (response) {
+            return response.json().then(function (data) {
+              return { ok: response.ok, data: data };
+            });
+          })
+          .then(function (result) {
+            if (!result.ok || !result.data.resumo) return;
+            resumoCache = result.data.resumo;
+            applyResumoBadges();
+          })
+          .catch(function () {});
+      }
+
+      function showPanel() {
+        loginBox.hidden = true;
+        panel.hidden = false;
+        feedback.hidden = true;
+        document.body.classList.remove("admin-guest");
+        ME_APP.initSessionIdleTimeout();
+        renderHubCards();
+        renderCuradoriaCards();
+        var secao = ME_APP.getQueryParam("secao");
+        showAdminView(secao === "curadoria" ? "curadoria" : "hub");
+        loadResumo();
+      }
+
+      document.getElementById("btn-login").addEventListener("click", function () {
+        var key = document.getElementById("admin-key").value.trim();
+        if (!key) {
+          if (window.ME_ANALYTICS) {
+            ME_ANALYTICS.track("admin_login_falha", { page: "admin", motivo: "senha_vazia" });
+          }
+          showFeedback("Informe a senha de acesso.", "erro");
+          return;
+        }
+        setKey(key);
+        if (window.ME_ANALYTICS) {
+          ME_ANALYTICS.track("admin_login_sucesso", { page: "admin" });
+        }
+        var destino = ME_APP.getQueryParam("destino");
+        if (destino && /^admin/.test(destino)) {
+          window.location.href = destino;
+          return;
+        }
+        showPanel();
+      });
+
+      document.getElementById("admin-curadoria-back").addEventListener("click", function () {
+        showAdminView("hub");
+      });
+
+      if (ME_APP.getQueryParam("idle") === "1") {
+        showFeedback("Sessão encerrada por inatividade (15 minutos). Entre novamente.", "ok");
+      }
+
+      if (getKey()) {
+        showPanel();
+      }
+    })();
+  </script>
+  <script src="js/admin-common.js?v=1"></script>
+  <script src="js/site-brand.js?v=2"></script>
+  <script src="js/app-shell.js?v=23"></script>
+  <script src="js/a11y-bar.js?v=1"></script>
+  <script>
+    if (!sessionStorage.getItem("me_admin_key")) {
+      document.body.classList.add("admin-guest");
+    }
+  </script>
+</body>
+</html>

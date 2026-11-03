@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Treino e Nutrição 50+ — calcule IMC, calorias e macros e receba um plano semanal de treino e ideias de refeições — Mais Experiência">
+  <title>Treino e Nutrição 50+ — Mais Experiência</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app-page.css?v=51">
+  <link rel="stylesheet" href="css/a11y-bar.css?v=14">
+  <script src="js/site-config.js"></script>
+  <script src="js/app-common.js?v=13"></script>
+  <script src="js/analytics.js?v=4"></script>
+</head>
+<body>
+  <main class="wrap wrap--hub">
+    <a class="back-link" href="bem_estar_50.html">← Voltar a Bem-estar</a>
+    <h1 class="page-title-keep">Treino e Nutrição</h1>
+    <p class="lead">
+      Informe suas medidas e objetivo para calcular seu IMC, necessidade calórica e macros —
+      e receber um plano de treino semanal e ideias de alimentação.
+    </p>
+
+    <p class="tn-aviso" role="note">
+      Estimativas educativas. Não substituem a orientação de médico, nutricionista ou
+      educador físico — especialmente na presença de condições de saúde.
+    </p>
+
+    <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+
+    <section class="tn-secao" aria-labelledby="tn-dados-title">
+      <h2 id="tn-dados-title" class="tn-secao-title">1. Seus dados</h2>
+      <form id="tn-form" class="tn-form" novalidate>
+        <div class="perfil-form-grid perfil-form-grid--3">
+          <div class="perfil-field">
+            <label for="tn-peso">Peso (kg)</label>
+            <input type="number" id="tn-peso" name="peso" min="30" max="300" step="0.1" inputmode="decimal" required>
+          </div>
+          <div class="perfil-field">
+            <label for="tn-altura">Altura (cm)</label>
+            <input type="number" id="tn-altura" name="altura" min="100" max="250" step="1" inputmode="numeric" required>
+          </div>
+          <div class="perfil-field">
+            <label for="tn-idade">Idade</label>
+            <input type="number" id="tn-idade" name="idade" min="18" max="120" step="1" inputmode="numeric" required>
+          </div>
+        </div>
+
+        <div class="perfil-form-grid perfil-form-grid--3">
+          <div class="perfil-field">
+            <label for="tn-sexo">Sexo biológico</label>
+            <select id="tn-sexo" name="sexo" required>
+              <option value="">Selecione…</option>
+              <option value="feminino">Feminino</option>
+              <option value="masculino">Masculino</option>
+            </select>
+            <p class="field-hint">Usado apenas para o cálculo metabólico.</p>
+          </div>
+          <div class="perfil-field">
+            <label for="tn-objetivo">Objetivo</label>
+            <select id="tn-objetivo" name="objetivo" required>
+              <option value="">Selecione…</option>
+              <option value="emagrecer">Emagrecer</option>
+              <option value="manter">Manter o peso</option>
+              <option value="ganhar">Ganhar massa</option>
+            </select>
+          </div>
+          <div class="perfil-field">
+            <label for="tn-local">Preferência de treino</label>
+            <select id="tn-local" name="local">
+              <option value="misto" selected>Misto (academia + casa)</option>
+              <option value="academia">Academia</option>
+              <option value="casa">Em casa</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="perfil-field">
+          <label for="tn-nivel">Nível de atividade</label>
+          <select id="tn-nivel" name="nivel" required>
+            <option value="">Selecione…</option>
+            <option value="sedentario">Sedentário — pouco ou nenhum exercício</option>
+            <option value="leve">Levemente ativo — 1 a 3 dias/semana</option>
+            <option value="moderado">Moderadamente ativo — 3 a 5 dias/semana</option>
+            <option value="ativo">Muito ativo — 6 a 7 dias/semana</option>
+            <option value="muito_ativo">Extremamente ativo — trabalho físico + treino</option>
+          </select>
+        </div>
+
+        <p class="actions">
+          <button type="submit" class="btn" id="tn-btn-calcular">Calcular e gerar planos</button>
+        </p>
+      </form>
+    </section>
+
+    <section class="tn-secao" id="tn-resultado-secao" aria-labelledby="tn-resultado-title" hidden>
+      <h2 id="tn-resultado-title" class="tn-secao-title">2. Resultado</h2>
+      <div class="tn-resultado-grid" id="tn-resultado"></div>
+    </section>
+
+    <section class="tn-secao" id="tn-planos-secao" aria-labelledby="tn-planos-title" hidden>
+      <div class="tn-planos-cabecalho">
+        <h2 id="tn-planos-title" class="tn-secao-title">3. Planos</h2>
+        <button type="button" class="btn btn-secondary btn-small tn-btn-imprimir" id="tn-btn-imprimir">
+          Imprimir / Salvar PDF
+        </button>
+      </div>
+      <nav class="pilar-view-tabs" id="tn-tabs" role="tablist" aria-label="Planos">
+        <button type="button" class="pilar-view-tab is-active" role="tab" data-tn-tab="treino" aria-selected="true" aria-controls="tn-painel-treino">Treino semanal</button>
+        <button type="button" class="pilar-view-tab" role="tab" data-tn-tab="nutricao" aria-selected="false" aria-controls="tn-painel-nutricao">Nutrição do dia</button>
+      </nav>
+      <div id="tn-painel-treino" class="tn-painel" role="tabpanel"></div>
+      <div id="tn-painel-nutricao" class="tn-painel" role="tabpanel" hidden></div>
+    </section>
+  </main>
+
+  <script src="src/lib/treino-nutricao.js?v=2"></script>
+  <script src="js/treino-nutricao-50.js?v=4"></script>
+  <script src="js/site-brand.js?v=2"></script>
+  <script src="js/app-shell.js?v=24"></script>
+  <script src="js/a11y-bar.js?v=1"></script>
+</body>
+</html>

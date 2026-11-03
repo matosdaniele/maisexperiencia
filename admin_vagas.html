@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Curadoria de vagas — Admin Mais Experiência">
+  <title>Admin vagas — Mais Experiência</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app-page.css?v=35">
+  <link rel="stylesheet" href="css/a11y-bar.css?v=14">
+  <script src="js/site-config.js"></script>
+  <script src="js/app-common.js?v=12"></script>
+  <script src="js/analytics.js?v=4"></script>
+  <script src="js/admin-page.js"></script>
+</head>
+<body>
+  <main class="wrap wrap--admin">
+    <a class="back-link" href="admin.html?secao=curadoria">← Voltar à curadoria</a>
+    <h1>Admin — curadoria de vagas</h1>
+    <p class="lead">Revise, edite o texto publicado e aprove ou rejeite vagas de parceiros.</p>
+
+    <div id="panel">
+      <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+      <div class="filtros">
+        <button type="button" class="btn btn-secondary btn-small" data-status="pendente">Pendentes</button>
+        <button type="button" class="btn btn-secondary btn-small" data-status="activa">Ativas</button>
+        <button type="button" class="btn btn-secondary btn-small" data-status="rejeitada">Rejeitadas</button>
+        <button type="button" class="btn btn-secondary btn-small" data-status="todas">Todas</button>
+      </div>
+      <div id="lista"></div>
+      <p class="actions">
+        <button type="button" class="btn btn-secondary" id="btn-reload">Atualizar</button>
+      </p>
+    </div>
+  </main>
+
+  <script src="js/admin-vagas.js?v=1"></script>
+  <script src="js/admin-common.js?v=1"></script>
+  <script src="js/site-brand.js?v=2"></script>
+  <script src="js/app-shell.js?v=23"></script>
+  <script src="js/a11y-bar.js?v=1"></script>
+</body>
+</html>

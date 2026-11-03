@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Vagas de emprego curadas para pessoas 50+ — Mais Experiência">
+  <title>Vagas de emprego 50+ — Mais Experiência</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app-page.css?v=35">
+  <link rel="stylesheet" href="css/a11y-bar.css?v=14">
+  <script src="js/site-config.js"></script>
+  <script src="js/app-common.js?v=12"></script>
+  <script src="js/vaga-areas.js"></script>
+  <script src="js/analytics.js?v=4"></script>
+</head>
+<body>
+  <main class="wrap">
+    <a class="back-link" id="back-link" href="area_50.html">← Voltar à área 50+</a>
+    <h1 id="page-title">Vagas de emprego</h1>
+    <p class="lead" id="page-lead">Oportunidades curadas pela nossa equipe para valorizar sua experiência.</p>
+
+    <div class="card card--hub" id="vagas-proximos-passos">
+      <p class="hub-card-title">Seus próximos passos</p>
+      <p class="hub-card-lead">Vamos no seu ritmo — cada passo aproxima você de novas oportunidades.</p>
+      <ul class="hub-checklist" id="hub-checklist" aria-live="polite">
+        <li class="hub-checklist-item">
+          <span class="hub-checklist-marker" aria-hidden="true">…</span>
+          <div class="hub-checklist-body">
+            <p class="hub-checklist-text">Carregando seu progresso…</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <nav class="pilar-view-tabs pilar-view-tabs--emprego" id="pilar-view-tabs" role="tablist" aria-label="Visualização" hidden>
+      <button type="button" class="pilar-view-tab is-active" role="tab" data-view="publicacoes" aria-selected="true">Publicações</button>
+      <button type="button" class="pilar-view-tab" role="tab" data-view="inscricoes" aria-selected="false">Minhas candidaturas</button>
+      <a class="pilar-view-tab" href="meu_curriculo_50.html" data-nav="curriculo">Currículo</a>
+    </nav>
+
+    <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+
+    <section id="publicacoes-panel" class="publicacoes-panel" hidden aria-label="Publicações">
+      <details class="curriculo-accordion emprego-section" id="interesses-section" open>
+        <summary class="curriculo-accordion-summary">Áreas de trabalho do seu interesse</summary>
+        <div class="curriculo-accordion-body interesses-panel">
+          <p class="lead interesses-lead">Selecione uma ou mais áreas. Só verá vagas da mesma área que as suas escolhas.</p>
+          <fieldset class="interesses-fieldset">
+            <legend class="visually-hidden">Áreas de trabalho do seu interesse</legend>
+            <div class="interesses-grid" id="interesses-grid"></div>
+          </fieldset>
+          <p class="actions">
+            <button type="button" class="btn" id="btn-salvar-interesses">Salvar interesses</button>
+          </p>
+        </div>
+      </details>
+
+      <details class="curriculo-accordion emprego-section" id="vagas-section" open>
+        <summary class="curriculo-accordion-summary">Vagas selecionadas para você</summary>
+        <div class="curriculo-accordion-body">
+          <ul class="publicacao-list publicacao-list--nested" id="vaga-list" aria-live="polite"></ul>
+        </div>
+      </details>
+    </section>
+
+    <section id="inscricoes-panel" class="inscricoes-panel" hidden aria-label="Minhas candidaturas">
+      <ul class="publicacao-list" id="inscricoes-list" aria-live="polite"></ul>
+    </section>
+  </main>
+
+  <script src="js/emprego-50.js?v=3"></script>
+  <script src="js/site-brand.js?v=2"></script>
+  <script src="js/app-shell.js?v=24"></script>
+  <script src="js/a11y-bar.js?v=1"></script>
+</body>
+</html>

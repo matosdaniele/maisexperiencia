@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Entrar — Mais Experiência para pessoas 50+">
+  <title>Entrar — Mais Experiência</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app-page.css?v=35">
+  <link rel="stylesheet" href="css/a11y-bar.css?v=14">
+  <script src="js/site-config.js"></script>
+  <script src="js/app-common.js?v=12"></script>
+  <script src="js/analytics.js?v=4"></script>
+</head>
+<body>
+  <main class="wrap">
+    <a class="back-link" href="entrar.html">← Voltar</a>
+    <h1>Entrar</h1>
+    <p class="lead">Informe o e-mail e a senha usados no cadastro para acessar à sua área 50+.</p>
+
+    <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+
+    <form id="form-entrar" novalidate>
+      <div>
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" autocomplete="email" required>
+      </div>
+      <div>
+        <label for="senha">Senha</label>
+        <input id="senha" name="senha" type="password" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn" id="btn-entrar">Entrar</button>
+    </form>
+
+    <p class="form-footer-link">Ainda não tem cadastro? <a class="link-inline" id="link-cadastro" href="cadastro_50.html">Quero me cadastrar</a></p>
+  </main>
+
+  <script>
+    (function () {
+      var form = document.getElementById("form-entrar");
+      var feedback = document.getElementById("feedback");
+      var btn = document.getElementById("btn-entrar");
+      var apiBase = window.ME_APP.getApiBase();
+
+      ME_ANALYTICS.track("entrar_inicio", { page: "entrar_50" });
+
+      var codigoConvite = (ME_APP.getQueryParam("c") || "").trim().toUpperCase();
+
+      var linkCadastro = document.getElementById("link-cadastro");
+      if (linkCadastro) {
+        var cadastroUrl = ME_APP.buildAuthUrl("cadastro_50.html", ME_APP.getQueryParam("destino"));
+        if (codigoConvite) {
+          cadastroUrl += (cadastroUrl.indexOf("?") >= 0 ? "&" : "?") + "c=" + encodeURIComponent(codigoConvite);
+        }
+        linkCadastro.href = cadastroUrl;
+      }
+
+      if (codigoConvite) {
+        showFeedback("Entre para aceitar o convite e participar da comunidade.", "ok");
+      }
+
+      function showFeedback(message, type) {
+        feedback.hidden = false;
+        feedback.textContent = message;
+        feedback.className = "feedback feedback--" + type;
+      }
+
+      if (ME_APP.getQueryParam("idle") === "1") {
+        showFeedback("Sessão encerrada por inatividade (20 minutos). Entre novamente.", "ok");
+      }
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        feedback.hidden = true;
+        var email = form.email.value.trim().toLowerCase();
+        var senha = form.senha.value;
+        btn.disabled = true;
+        btn.textContent = "Verificando…";
+        ME_ANALYTICS.track("entrar_submit", { page: "entrar_50" });
+
+        fetch(apiBase + "/api/contas/entrar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email, senha: senha, codigoConvite: codigoConvite || undefined }),
+        })
+          .then(function (response) {
+            return response.json().then(function (data) {
+              return { ok: response.ok, data: data };
+            });
+          })
+          .then(function (result) {
+            if (result.ok && result.data.perfil) {
+              ME_APP.saveSession(
+                Object.assign({}, result.data.perfil, { token: result.data.token })
+              );
+              ME_ANALYTICS.track("entrar_sucesso", { page: "entrar_50" });
+              window.location.href = ME_APP.resolveRedirectAfterAuth();
+              return;
+            }
+            ME_ANALYTICS.track("entrar_erro", { page: "entrar_50", motivo: "credenciais" });
+            showFeedback(result.data.error || "E-mail ou senha incorretos.", "erro");
+          })
+          .catch(function () {
+            ME_ANALYTICS.track("entrar_erro", { page: "entrar_50", motivo: "rede" });
+            showFeedback("Não foi possível contatar a API. Tente novamente em instantes.", "erro");
+          })
+          .finally(function () {
+            btn.disabled = false;
+            btn.textContent = "Entrar";
+          });
+      });
+    })();
+  </script>
+  <script src="js/site-brand.js?v=2"></script>
+  <script src="js/public-page-shell.js?v=3"></script>
+  <script src="js/a11y-bar.js?v=1"></script>
+</body>
+</html>

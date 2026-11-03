@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Meu logo — Área do parceiro Mais Experiência">
+  <title>Meu logo — Mais Experiência</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app-page.css?v=35">
+  <link rel="stylesheet" href="css/a11y-bar.css?v=14">
+  <script src="js/site-config.js"></script>
+  <script src="js/app-common.js?v=13"></script>
+  <script src="js/analytics.js?v=4"></script>
+</head>
+<body>
+  <main class="wrap">
+    <a class="back-link" href="area_parceiro.html">← Voltar à área do parceiro</a>
+    <h1>Meu logo</h1>
+    <p class="lead">Adicione a imagem da marca da sua empresa. Formatos PNG, JPG ou WebP · imagens grandes são reduzidas automaticamente (até 400 KB).</p>
+
+    <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+
+    <div class="logo-preview-wrap" id="preview-wrap">
+      <p class="logo-preview-placeholder" id="preview-placeholder">Nenhum logo carregado</p>
+      <img id="preview-img" class="logo-preview" alt="Logo da empresa" hidden>
+    </div>
+
+    <form id="form-logo" novalidate>
+      <div>
+        <label for="arquivo-logo">Selecionar imagem</label>
+        <input id="arquivo-logo" name="arquivo-logo" type="file" accept="image/png,image/jpeg,image/webp" required>
+      </div>
+      <button type="submit" class="btn" id="btn-salvar">Guardar logo</button>
+    </form>
+  </main>
+
+  <script>
+    (function () {
+      var sessao = ME_APP.ensureParceiroSession();
+      if (!sessao) return;
+
+      var apiBase = ME_APP.getApiBase();
+      var form = document.getElementById("form-logo");
+      var feedback = document.getElementById("feedback");
+      var previewImg = document.getElementById("preview-img");
+      var previewPlaceholder = document.getElementById("preview-placeholder");
+      var btn = document.getElementById("btn-salvar");
+      var logoPendente = null;
+
+      ME_ANALYTICS.track("meu_logo_visita", { page: "meu_logo" });
+
+      function showFeedback(message, type) {
+        feedback.hidden = false;
+        feedback.textContent = message;
+        feedback.className = "feedback feedback--" + type;
+      }
+
+      function mostrarLogo(dataUrl) {
+        if (!dataUrl) {
+          previewImg.hidden = true;
+          previewImg.removeAttribute("src");
+          previewPlaceholder.hidden = false;
+          return;
+        }
+        previewImg.src = dataUrl;
+        previewImg.hidden = false;
+        previewPlaceholder.hidden = true;
+      }
+
+      if (sessao.logoUrl) {
+        mostrarLogo(sessao.logoUrl);
+      }
+
+      fetch(apiBase + "/api/parceiros/perfil", { headers: ME_APP.getAuthHeaders() })
+        .then(function (response) {
+          return response.json().then(function (data) {
+            return { ok: response.ok, data: data };
+          });
+        })
+        .then(function (result) {
+          if (result.ok && result.data.perfil && result.data.perfil.logoUrl) {
+            mostrarLogo(result.data.perfil.logoUrl);
+            ME_APP.saveParceiroSession(Object.assign({}, sessao, {
+              logoUrl: result.data.perfil.logoUrl,
+            }));
+          }
+        })
+        .catch(function () {});
+
+      document.getElementById("arquivo-logo").addEventListener("change", function (event) {
+        feedback.hidden = true;
+        var file = event.target.files && event.target.files[0];
+        if (!file) return;
+
+        ME_APP.prepareImageUpload(file, { preferPng: /image\/png/i.test(file.type || "") })
+          .then(function (dataUrl) {
+            logoPendente = dataUrl;
+            mostrarLogo(logoPendente);
+            if (file.size > 400 * 1024) {
+              showFeedback("Imagem reduzida automaticamente para caber no limite.", "ok");
+            }
+          })
+          .catch(function (err) {
+            showFeedback((err && err.message) || "Não foi possível ler a imagem.", "erro");
+            event.target.value = "";
+            logoPendente = null;
+          });
+      });
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        feedback.hidden = true;
+
+        if (!logoPendente) {
+          showFeedback("Selecione uma imagem antes de salvar.", "erro");
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = "Salvando…";
+
+        fetch(apiBase + "/api/parceiros/logo", {
+          method: "PATCH",
+          headers: ME_APP.authJsonHeaders(),
+          body: JSON.stringify({
+            logoDataUrl: logoPendente,
+          }),
+        })
+          .then(function (response) {
+            return response.json().then(function (data) {
+              return { ok: response.ok, data: data };
+            });
+          })
+          .then(function (result) {
+            if (result.ok) {
+              ME_APP.saveParceiroSession(Object.assign({}, sessao, {
+                logoUrl: logoPendente,
+              }));
+              ME_ANALYTICS.track("meu_logo_sucesso", { page: "meu_logo" });
+              showFeedback("Logo guardado com sucesso.", "ok");
+              form.reset();
+              return;
+            }
+            showFeedback(result.data.error || "Não foi possível salvar o logo.", "erro");
+          })
+          .catch(function () {
+            showFeedback("Erro de conexão. Tente novamente.", "erro");
+          })
+          .finally(function () {
+            btn.disabled = false;
+            btn.textContent = "Guardar logo";
+          });
+      });
+    })();
+  </script>
+  <script src="js/site-brand.js?v=2"></script>
+  <script src="js/app-shell.js?v=23"></script>
+  <script src="js/a11y-bar.js?v=1"></script>
+</body>
+</html>

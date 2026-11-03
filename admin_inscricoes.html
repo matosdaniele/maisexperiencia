@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Inscrições e pagamentos — Admin Mais Experiência">
+  <title>Admin inscrições — Mais Experiência</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app-page.css?v=35">
+  <link rel="stylesheet" href="css/a11y-bar.css?v=14">
+  <script src="js/site-config.js"></script>
+  <script src="js/app-common.js?v=12"></script>
+  <script src="js/analytics.js?v=4"></script>
+  <script src="js/admin-page.js"></script>
+</head>
+<body>
+  <main class="wrap wrap--admin">
+    <a class="back-link" href="admin.html">← Voltar à área admin</a>
+    <h1>Admin — inscrições</h1>
+    <p class="lead">Marque pagamentos manualmente (marketplace piloto · comissão 20%).</p>
+
+
+    <div id="panel">
+      <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+      <p class="totais" id="totais"></p>
+      <div class="admin-table-scroll">
+      <table class="admin-inscricoes-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Nome</th>
+            <th>Oferta</th>
+            <th>Valor</th>
+            <th>Status</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      </div>
+      <p class="actions">
+        <button type="button" class="btn btn-secondary" id="btn-reload">Atualizar</button>
+      </p>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      if (!ME_ADMIN_PAGE.boot()) return;
+      var apiBase = ME_APP.getApiBase();
+      var panel = document.getElementById("panel");
+      var tbody = document.getElementById("tbody");
+      var feedback = document.getElementById("feedback");
+      var totaisEl = document.getElementById("totais");
+
+      function getKey() {
+        return ME_ADMIN_PAGE.getKey();
+      }
+
+      function showFeedback(message, type) {
+        feedback.hidden = false;
+        feedback.textContent = message;
+        feedback.className = "feedback feedback--" + type;
+      }
+
+      function formatBrl(value) {
+        return "R$ " + Number(value).toFixed(2).replace(".", ",");
+      }
+
+      function formatDate(value) {
+        if (!value) return "—";
+        return new Date(value).toLocaleString("pt-BR");
+      }
+
+      function loadInscricoes() {
+        fetch(apiBase + "/api/admin/inscricoes?status=pendente", {
+          headers: { "X-Admin-Key": getKey() },
+        })
+          .then(function (response) {
+            return response.json().then(function (data) {
+              return { ok: response.ok, status: response.status, data: data };
+            });
+          })
+          .then(function (result) {
+            if (result.status === 401) {
+              ME_ADMIN_PAGE.handle401();
+              return;
+            }
+            if (!result.ok) {
+              showFeedback(result.data.error || "Erro ao carregar.", "erro");
+              return;
+            }
+
+            feedback.hidden = true;
+            totaisEl.textContent =
+              "Comissão plataforma (pagas listadas): " +
+              formatBrl(result.data.totais.comissaoPlataforma);
+
+            tbody.innerHTML = "";
+            if (!result.data.inscricoes.length) {
+              tbody.innerHTML = "<tr><td colspan=\"6\">Nenhuma inscrição pendente.</td></tr>";
+              return;
+            }
+
+            result.data.inscricoes.forEach(function (item) {
+              var tr = document.createElement("tr");
+              tr.innerHTML =
+                "<td>" + formatDate(item.createdAt) + "</td>" +
+                "<td>" + item.nome + "<br><small>" + item.email + "</small></td>" +
+                "<td>" + item.titulo + "</td>" +
+                "<td>" + formatBrl(item.valorInscricaoBrl) + "</td>" +
+                "<td>" + item.status + "</td>" +
+                "<td></td>";
+
+              if (item.status === "pendente") {
+                var btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "btn";
+                btn.textContent = "Marcar paga";
+                btn.addEventListener("click", function () {
+                  btn.disabled = true;
+                  fetch(apiBase + "/api/admin/inscricoes/" + item._id + "/pagar", {
+                    method: "PATCH",
+                    headers: { "X-Admin-Key": getKey() },
+                  })
+                    .then(function (response) { return response.json(); })
+                    .then(function (data) {
+                      if (data.ok) {
+                        showFeedback("Pagamento registrado. Comissão: " + formatBrl(data.comissaoBrl), "ok");
+                        if (window.ME_ANALYTICS) {
+                          ME_ANALYTICS.track("admin_inscricao_paga", { page: "admin_inscricoes" });
+                        }
+                        loadInscricoes();
+                        return;
+                      }
+                      showFeedback(data.error || "Erro.", "erro");
+                      btn.disabled = false;
+                    });
+                });
+                tr.lastElementChild.appendChild(btn);
+              }
+
+              tbody.appendChild(tr);
+            });
+          });
+      }
+
+      document.getElementById("btn-reload").addEventListener("click", loadInscricoes);
+
+      loadInscricoes();
+    })();
+  </script>
+  <script src="js/admin-common.js?v=1"></script>
+  <script src="js/site-brand.js?v=2"></script>
+  <script src="js/app-shell.js?v=23"></script>
+  <script src="js/a11y-bar.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Área do parceiro — Mais Experiência">
+  <title>Área do parceiro — Mais Experiência</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app-page.css?v=35">
+  <link rel="stylesheet" href="css/a11y-bar.css?v=14">
+  <script src="js/site-config.js"></script>
+  <script src="js/app-common.js?v=12"></script>
+  <script src="js/parceiro-pilares.js"></script>
+  <script src="js/analytics.js?v=4"></script>
+</head>
+<body>
+  <main class="wrap wrap--hub">
+    <h1 class="visually-hidden">Área do parceiro</h1>
+
+    <section class="hub-welcome hub-welcome--parceiro" aria-labelledby="hub-welcome-title">
+      <div class="hub-welcome-avatar hub-welcome-avatar--logo" id="hub-avatar" aria-hidden="true">
+        <span class="hub-welcome-iniciais" id="hub-iniciais">ME</span>
+      </div>
+      <div class="hub-welcome-body">
+        <p class="hub-welcome-eyebrow">Área do parceiro</p>
+        <h2 class="hub-welcome-title" id="hub-welcome-title">Olá</h2>
+        <p class="hub-welcome-text" id="saudacao">Carregando…</p>
+        <a class="hub-welcome-link link-inline" href="meu_logo.html">Ver ou atualizar o logo da empresa</a>
+      </div>
+    </section>
+
+    <div class="card card--hub">
+      <p class="hub-card-title">Seus próximos passos</p>
+      <p class="hub-card-lead">Publique no seu ritmo — cada passo fortalece a presença da sua marca junto ao público 50+.</p>
+      <ul class="hub-checklist" id="hub-checklist" aria-live="polite">
+        <li class="hub-checklist-item">
+          <span class="hub-checklist-marker" aria-hidden="true">…</span>
+          <div class="hub-checklist-body">
+            <p class="hub-checklist-text">Carregando seu progresso…</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="pilares pilares--hub" aria-labelledby="pilares-parceiro-title">
+      <h2 id="pilares-parceiro-title" class="pilares-title pilares-title--hub">O que deseja gerir hoje?</h2>
+      <ul class="pilares-grid" id="pilares-grid"></ul>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var sessao = ME_APP.ensureParceiroSession();
+      if (!sessao) return;
+
+      var apiBase = ME_APP.getApiBase();
+      var empresa = sessao.empresa || "sua empresa";
+      var nomeCompleto = sessao.nome || "";
+      var primeiroNome = nomeCompleto.trim().split(/\s+/)[0] || "você";
+
+      function iniciaisDe(nome) {
+        var partes = String(nome || "")
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean);
+        if (!partes.length) return "ME";
+        if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase();
+        return (partes[0].charAt(0) + partes[partes.length - 1].charAt(0)).toUpperCase();
+      }
+
+      function setAvatar(logoUrl, nome) {
+        var wrap = document.getElementById("hub-avatar");
+        if (!wrap) return;
+        wrap.innerHTML = "";
+        if (logoUrl) {
+          var img = document.createElement("img");
+          img.className = "hub-welcome-foto hub-welcome-foto--logo";
+          img.src = logoUrl;
+          img.alt = "";
+          img.width = 96;
+          img.height = 96;
+          img.decoding = "async";
+          wrap.appendChild(img);
+          wrap.classList.add("has-foto");
+          return;
+        }
+        var span = document.createElement("span");
+        span.className = "hub-welcome-iniciais";
+        span.id = "hub-iniciais";
+        span.textContent = iniciaisDe(nome || empresa);
+        wrap.appendChild(span);
+        wrap.classList.remove("has-foto");
+      }
+
+      document.getElementById("hub-welcome-title").textContent = "Olá, " + primeiroNome;
+      document.getElementById("saudacao").textContent =
+        "Bem-vindo(a) de volta à " + empresa + ". Aqui você publica e acompanha oportunidades para o público 50+.";
+      setAvatar(sessao.logoUrl || null, nomeCompleto);
+
+      function renderChecklist(steps) {
+        var ul = document.getElementById("hub-checklist");
+        ul.innerHTML = steps
+          .map(function (step) {
+            return (
+              '<li class="hub-checklist-item' + (step.done ? " is-done" : "") + '">' +
+              '<span class="hub-checklist-marker" aria-hidden="true">' + (step.done ? "✓" : String(step.num)) + "</span>" +
+              '<div class="hub-checklist-body">' +
+              '<p class="hub-checklist-title">' + step.title + "</p>" +
+              '<p class="hub-checklist-text">' + step.text + "</p>" +
+              (step.done
+                ? '<p class="hub-checklist-done">Concluído</p>'
+                : '<a class="hub-checklist-link link-inline" href="' + step.href + '">' + step.linkLabel + "</a>") +
+              "</div></li>"
+            );
+          })
+          .join("");
+      }
+
+      var fallbackSteps = [
+        {
+          num: 1,
+          title: "Configure o logo da empresa",
+          text: "O logo aparece nas publicações e reforça a identidade da sua marca.",
+          href: "meu_logo.html",
+          linkLabel: "Ir ao logo",
+          done: false,
+        },
+        {
+          num: 2,
+          title: "Envie sua 1.ª publicação",
+          text: "Cadastre uma vaga, curso, comunidade ou oferta de bem-estar.",
+          href: "pilar_parceiro.html?tipo=vaga",
+          linkLabel: "Publicar oportunidade",
+          done: false,
+        },
+        {
+          num: 3,
+          title: "Aguarde a curadoria",
+          text: "Após a aprovação, sua oferta fica visível para o público 50+.",
+          href: "publicacoes_parceiro.html",
+          linkLabel: "Ver minhas publicações",
+          done: false,
+        },
+      ];
+
+      Promise.all([
+        fetch(apiBase + "/api/parceiros/perfil", { headers: ME_APP.getAuthHeaders() }).then(function (r) {
+          return r.json();
+        }),
+        fetch(apiBase + "/api/parceiros/publicacoes", { headers: ME_APP.getAuthHeaders() }).then(function (r) {
+          return r.json();
+        }),
+      ])
+        .then(function (results) {
+          var perfil = results[0];
+          var publicacoes = results[1];
+          var logoUrl =
+            (perfil.ok && perfil.perfil && perfil.perfil.logoUrl) || sessao.logoUrl || null;
+          var hasLogo = !!logoUrl;
+          var lista = publicacoes.ok && publicacoes.publicacoes ? publicacoes.publicacoes : [];
+          var hasPublicacao = lista.length > 0;
+          var hasAprovada = lista.some(function (item) {
+            return item.status === "activa" || item.status === "activo" || item.ativo === true;
+          });
+
+          setAvatar(logoUrl, nomeCompleto);
+
+          renderChecklist([
+            Object.assign({}, fallbackSteps[0], { done: hasLogo }),
+            Object.assign({}, fallbackSteps[1], { done: hasPublicacao }),
+            Object.assign({}, fallbackSteps[2], { done: hasAprovada }),
+          ]);
+        })
+        .catch(function () {
+          renderChecklist(fallbackSteps);
+        });
+
+      var grid = document.getElementById("pilares-grid");
+      ME_PARCEIRO_PILAR_ORDER.forEach(function (tipo) {
+        var pilar = ME_PARCEIRO_PILAR.get(tipo);
+        if (!pilar) return;
+        var li = document.createElement("li");
+        li.innerHTML =
+          '<a class="pilar-card pilar-card--link pilar-card--compact" href="pilar_parceiro.html?tipo=' + encodeURIComponent(tipo) + '">' +
+          '<img class="pilar-card-icon" src="' + pilar.icon + '" alt="" width="64" height="64" decoding="async">' +
+          "<h3 class=\"pilar-card-title\">" + pilar.titulo + "</h3>" +
+          "</a>";
+        grid.appendChild(li);
+      });
+
+      ME_ANALYTICS.track("area_parceiro_visita", { page: "area_parceiro" });
+    })();
+  </script>
+  <script src="js/site-brand.js?v=2"></script>
+  <script src="js/app-shell.js?v=23"></script>
+  <script src="js/a11y-bar.js?v=1"></script>
+</body>
+</html>

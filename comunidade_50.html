@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Comunidade 50+ — encontre pessoas da sua idade perto de você para conversar, sair ou namorar, no seu ritmo — Mais Experiência">
+  <title>Comunidade 50+ — Mais Experiência</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app-page.css?v=47">
+  <link rel="stylesheet" href="css/a11y-bar.css?v=14">
+  <script src="js/site-config.js"></script>
+  <script src="js/app-common.js?v=13"></script>
+  <script src="js/analytics.js?v=4"></script>
+</head>
+<body>
+  <main class="wrap wrap--hub">
+    <a class="back-link" href="area_50.html">← Voltar à área 50+</a>
+    <h1 class="visually-hidden">Comunidade</h1>
+
+    <section class="comunidade-intro" aria-labelledby="comunidade-welcome-title">
+      <p class="comunidade-intro-eyebrow">Rede social 50+</p>
+      <h2 class="comunidade-intro-title" id="comunidade-welcome-title">Comunidade</h2>
+      <p class="comunidade-intro-text" id="comunidade-lead">
+        Encontre pessoas da sua idade perto de você — para conversar, sair ou namorar, no seu ritmo.
+      </p>
+      <ul class="comunidade-pilares" aria-label="O que você encontra aqui">
+        <li>Amizade</li>
+        <li>Namoro <span class="comunidade-pilares-opt">(opcional)</span></li>
+        <li>Grupos locais</li>
+      </ul>
+    </section>
+
+    <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+
+    <nav class="pilar-view-tabs" id="comunidade-tabs" role="tablist" aria-label="Áreas da comunidade">
+      <button type="button" class="pilar-view-tab is-active" role="tab" id="tab-descobrir" data-tab="descobrir" aria-selected="true" aria-controls="panel-descobrir">Descobrir</button>
+      <button type="button" class="pilar-view-tab" role="tab" id="tab-grupos" data-tab="grupos" aria-selected="false" aria-controls="panel-grupos">Grupos</button>
+      <button type="button" class="pilar-view-tab" role="tab" id="tab-encontros" data-tab="encontros" aria-selected="false" aria-controls="panel-encontros">Encontros</button>
+    </nav>
+
+    <section id="panel-descobrir" class="comunidade-panel" role="tabpanel" aria-labelledby="tab-descobrir">
+      <p class="comunidade-panel-lead">
+        Descoberta simples, sem pressão. Veja um perfil de cada vez e decida no seu tempo.
+      </p>
+
+      <fieldset class="comunidade-intencao">
+        <legend class="comunidade-intencao-legend">Quero conectar por</legend>
+        <div class="comunidade-intencao-chips" id="intencao-chips" role="group" aria-label="Tipo de conexão"></div>
+        <p class="field-hint comunidade-intencao-hint">
+          Namoro é opcional. Você pode buscar só amizade — ou os dois.
+        </p>
+      </fieldset>
+
+      <div class="comunidade-descoberta" id="descoberta-root" aria-live="polite"></div>
+    </section>
+
+    <section id="panel-grupos" class="comunidade-panel" role="tabpanel" aria-labelledby="tab-grupos" hidden>
+      <div id="grupos-view-meus">
+        <p class="comunidade-panel-lead">
+          Suas comunidades. Entre em uma comunidade para ver os membros e convidar pessoas.
+        </p>
+        <p class="actions comunidade-grupos-actions">
+          <button type="button" class="btn" id="btn-descobrir-grupos">Descobrir comunidades</button>
+          <button type="button" class="btn btn-secondary" id="btn-abrir-criar-grupo">Criar comunidade</button>
+        </p>
+
+        <form id="form-criar-grupo" class="comunidade-criar-form" hidden>
+          <h3 class="comunidade-criar-titulo">Criar uma comunidade</h3>
+          <div class="perfil-field">
+            <label for="grupo-titulo">Nome da comunidade</label>
+            <input type="text" id="grupo-titulo" name="titulo" maxlength="80" required placeholder="Ex.: Caminhada na Redenção" autocomplete="off">
+          </div>
+          <div class="perfil-field">
+            <label for="grupo-descricao">Descrição (opcional)</label>
+            <textarea id="grupo-descricao" name="descricao" rows="2" maxlength="400" placeholder="Sobre o que é a comunidade?"></textarea>
+          </div>
+          <div class="perfil-form-grid perfil-form-grid--3">
+            <div class="perfil-field">
+              <label for="grupo-tipo">Tipo</label>
+              <select id="grupo-tipo" name="tipo" required>
+                <option value="interesse">Interesse (tema em comum)</option>
+                <option value="encontros">Encontros (sair juntos)</option>
+              </select>
+            </div>
+            <div class="perfil-field">
+              <label for="grupo-cidade">Cidade (opcional)</label>
+              <input type="text" id="grupo-cidade" name="cidade" maxlength="80" placeholder="Ex.: Porto Alegre" autocomplete="off">
+            </div>
+            <div class="perfil-field">
+              <label for="grupo-visibilidade">Quem pode entrar</label>
+              <select id="grupo-visibilidade" name="visibilidade">
+                <option value="aberta">Aberta (qualquer pessoa 50+)</option>
+                <option value="convite">Somente por convite</option>
+              </select>
+            </div>
+          </div>
+          <p class="actions comunidade-grupos-actions">
+            <button type="submit" class="btn" id="btn-salvar-grupo">Criar comunidade</button>
+            <button type="button" class="btn btn-secondary" id="btn-cancelar-criar-grupo">Cancelar</button>
+          </p>
+        </form>
+
+        <ul class="comunidade-grupos-grid" id="grupos-meus-list" aria-live="polite"></ul>
+      </div>
+
+      <div id="grupos-view-descobrir" hidden>
+        <p class="comunidade-panel-lead">
+          Comunidades abertas no espírito Orkut: temas, vizinhança e gente perto de você.
+        </p>
+        <p class="actions comunidade-grupos-actions">
+          <button type="button" class="btn btn-secondary" id="btn-voltar-meus-grupos">← Minhas comunidades</button>
+        </p>
+        <ul class="comunidade-grupos-grid" id="grupos-descobrir-list" aria-live="polite"></ul>
+      </div>
+
+      <div id="grupos-view-detalhe" hidden>
+        <p class="actions comunidade-grupos-actions">
+          <button type="button" class="btn btn-secondary" id="btn-voltar-grupo-detalhe">← Voltar às minhas comunidades</button>
+        </p>
+        <article class="comunidade-grupo-detalhe" id="grupo-detalhe" aria-live="polite"></article>
+      </div>
+    </section>
+
+    <section id="panel-encontros" class="comunidade-panel" role="tabpanel" aria-labelledby="tab-encontros" hidden>
+      <p class="comunidade-panel-lead">Encontros, oficinas e rodas de conversa publicados por parceiros e pela Mais Experiência.</p>
+      <nav class="pilar-view-tabs pilar-view-tabs--sub" id="pilar-view-tabs" role="tablist" aria-label="Encontros">
+        <button type="button" class="pilar-view-tab is-active" role="tab" data-view="publicacoes" aria-selected="true">Próximos encontros</button>
+        <button type="button" class="pilar-view-tab" role="tab" data-view="inscricoes" aria-selected="false">Minhas inscrições</button>
+      </nav>
+      <section id="publicacoes-panel" class="publicacoes-panel" hidden aria-label="Próximos encontros">
+        <ul class="publicacao-list" id="oferta-list" aria-live="polite"></ul>
+      </section>
+      <section id="inscricoes-panel" class="inscricoes-panel" hidden aria-label="Minhas inscrições">
+        <ul class="publicacao-list" id="inscricoes-list" aria-live="polite"></ul>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    window.ME_OFERTA_PAGE = {
+      page: "comunidade_50.html",
+      tipo: "evento",
+      titulo: "Comunidade",
+      lead: "Encontre pessoas da sua idade perto de você — para conversar, sair ou namorar, no seu ritmo.",
+      analyticsPage: "comunidade_50",
+      skipPageTitle: true,
+      skipAnalytics: true,
+    };
+  </script>
+  <script src="js/comunidade-50.js?v=6"></script>
+  <script src="js/ofertas-50.js?v=11"></script>
+  <script src="js/site-brand.js?v=2"></script>
+  <script src="js/app-shell.js?v=24"></script>
+  <script src="js/a11y-bar.js?v=1"></script>
+</body>
+</html>

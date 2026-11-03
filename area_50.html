@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Área 50+ — Mais Experiência">
+  <title>Área 50+ — Mais Experiência</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app-page.css?v=35">
+  <link rel="stylesheet" href="css/a11y-bar.css?v=14">
+  <script src="js/site-config.js"></script>
+  <script src="js/app-common.js?v=13"></script>
+  <script src="js/pilares-50.js"></script>
+  <script src="js/analytics.js?v=4"></script>
+</head>
+<body>
+  <main class="wrap wrap--hub">
+    <h1 class="visually-hidden">Área 50+</h1>
+
+    <section class="hub-welcome" aria-labelledby="hub-welcome-title">
+      <div class="hub-welcome-avatar" id="hub-avatar" aria-hidden="true">
+        <span class="hub-welcome-iniciais" id="hub-iniciais">ME</span>
+      </div>
+      <div class="hub-welcome-body">
+        <p class="hub-welcome-eyebrow">Seu espaço 50+</p>
+        <h2 class="hub-welcome-title" id="hub-welcome-title">Olá</h2>
+        <p class="hub-welcome-text" id="saudacao">Carregando…</p>
+        <blockquote class="hub-welcome-quote" id="frase-motivacional" cite="Mais Experiência"></blockquote>
+      </div>
+    </section>
+
+    <div class="pilares pilares--hub" aria-labelledby="pilares-50-title">
+      <h2 id="pilares-50-title" class="pilares-title pilares-title--hub">O que deseja explorar hoje?</h2>
+      <ul class="pilares-grid" id="pilares-grid"></ul>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var sessao = ME_APP.ensureSession50();
+      if (!sessao) return;
+
+      var apiBase = ME_APP.getApiBase();
+      var nomeCompleto = sessao.nome || "";
+      var primeiroNome = nomeCompleto.trim().split(/\s+/)[0] || "você";
+
+      function iniciaisDe(nome) {
+        var partes = String(nome || "")
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean);
+        if (!partes.length) return "ME";
+        if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase();
+        return (partes[0].charAt(0) + partes[partes.length - 1].charAt(0)).toUpperCase();
+      }
+
+      function setAvatar(fotoUrl, nome) {
+        var wrap = document.getElementById("hub-avatar");
+        if (!wrap) return;
+        wrap.innerHTML = "";
+        if (fotoUrl) {
+          var img = document.createElement("img");
+          img.className = "hub-welcome-foto";
+          img.src = fotoUrl;
+          img.alt = "";
+          img.width = 96;
+          img.height = 96;
+          img.decoding = "async";
+          wrap.appendChild(img);
+          wrap.classList.add("has-foto");
+          return;
+        }
+        var span = document.createElement("span");
+        span.className = "hub-welcome-iniciais";
+        span.id = "hub-iniciais";
+        span.textContent = iniciaisDe(nome);
+        wrap.appendChild(span);
+        wrap.classList.remove("has-foto");
+      }
+
+      document.getElementById("hub-welcome-title").textContent = "Olá, " + primeiroNome;
+      document.getElementById("saudacao").textContent =
+        "Que bom ter você de volta. Aqui está o seu espaço para oportunidades, aprendizado e conexões.";
+      setAvatar(null, nomeCompleto);
+
+      var frasesMotivacionais = [
+        { texto: "Comece onde você está, use o que você tem e faça o que você pode.", autor: "Arthur Ashe" },
+        { texto: "Tudo o que um sonho precisa para ser realizado é alguém que acredite que ele possa ser realizado.", autor: "Roberto Shinyashiki" },
+        { texto: "Devíamos ser ensinados a não esperar por inspiração para começar algo. Ação sempre gera inspiração. Inspiração raramente gera ação.", autor: "Frank Tibolt" },
+        { texto: "Não importa que você vá devagar, contanto que você não pare.", autor: "Confúcio" },
+        { texto: "A inspiração existe, porém temos que encontrá-la trabalhando.", autor: "Pablo Picasso" },
+        { texto: "Coragem é saber o que não temer.", autor: "Platão" },
+        { texto: "Quem olha para fora, sonha; quem olha para dentro, desperta.", autor: "Carl Gustav Jung" },
+        { texto: "Descubra quem é você, e seja essa pessoa. A sua alma foi colocada nesse mundo para ser isso, então viva essa verdade e todo resto virá.", autor: "Ellen Degeneres" },
+        { texto: "Tudo vale a pena quando a alma não é pequena.", autor: "Fernando Pessoa" },
+        { texto: "Não é a carga que o derruba, mas a maneira como você a carrega.", autor: "Lou Holtz" },
+        { texto: "Não existe nada de completamente errado no mundo, mesmo um relógio parado, consegue estar certo duas vezes por dia.", autor: "Paulo Coelho" },
+        { texto: "A vida é 10% o que acontece a você e 90% como você reage a isso.", autor: "Charles Swindoll" },
+        { texto: "O otimismo é a fé daquele que conduz à realização; nada pode ser feito sem esperança.", autor: "Helen Keller" },
+        { texto: "Um livro, uma caneta, uma criança e um professor podem mudar o mundo.", autor: "Malala Yousafzai" },
+        { texto: "A felicidade não é algo pronto. Ela é feita das suas próprias ações.", autor: "Dalai Lama" },
+        { texto: "Nossa maior fraqueza está em desistir. O caminho mais certo de vencer é tentar mais uma vez.", autor: "Thomas Edison" },
+        { texto: "Mude o modo que você olha para as coisas, e as coisas que você olha mudarão.", autor: "Wayne Dyer" },
+        { texto: "Um homem criativo é motivado pelo desejo de alcançar, não pelo desejo de vencer os outros.", autor: "Ayn Rand" },
+        { texto: "Viver é acalentar sonhos e esperanças, fazendo da fé a nossa inspiração maior. É buscar nas pequenas coisas, um grande motivo para ser feliz!", autor: "Mario Quintana" },
+        { texto: "As conquistas dependem de 50% de inspiração, criatividade e sonhos, e 50% de disciplina, trabalho árduo e determinação. São duas pernas que devem caminhar juntas.", autor: "Augusto Cury" },
+        { texto: "A vida é uma tragédia vista de perto, mas uma comédia vista de longe.", autor: "Charles Chaplin" },
+        { texto: "Existe apenas um canto do universo que você pode ter certeza de aperfeiçoar, que é você mesmo.", autor: "Aldous Huxley" },
+        { texto: "Não podemos fazer grandes coisas, apenas pequenas coisas com grande amor.", autor: "Madre Teresa de Calcutá" },
+        { texto: "A paz vem de dentro de você mesmo. Não a procure à sua volta.", autor: "Buda" },
+        { texto: "Até cortar os próprios defeitos pode ser perigoso. Nunca se sabe qual é o defeito que sustenta nosso edifício inteiro.", autor: "Clarice Lispector" },
+        { texto: "A imaginação é mais importante que o conhecimento.", autor: "Albert Einstein" },
+        { texto: "Não há atalhos para nenhum destino onde se vale a pena chegar.", autor: "Beverly Sills" },
+        { texto: "Não se deixe intimidar pela opinião dos outros. Só a mediocridade é segura, por isso corra seus riscos e faça o que deseja.", autor: "Paulo Coelho" },
+        { texto: "Não extinga sua inspiração e sua imaginação; não se torne o escravo do seu modelo.", autor: "Vincent van Gogh" },
+        { texto: "Saber encontrar a alegria na alegria dos outros, é o segredo da felicidade.", autor: "Georges Bernanos" },
+        { texto: "A primavera chegará, mesmo que ninguém mais saiba seu nome, nem acredite no calendário, nem possua jardim para recebê-la.", autor: "Cecília Meireles" },
+        { texto: "Mestre não é quem sempre ensina, mas quem de repente aprende.", autor: "Guimarães Rosa" },
+        { texto: "A mentira nunca vive o suficiente para envelhecer.", autor: "Sófocles" },
+        { texto: "De que me adianta temer o que já aconteceu? O tempo do medo já aconteceu, agora, começa o tempo da esperança.", autor: "Paulo Coelho" },
+        { texto: "Não há nada como regressar a um lugar que está igual para descobrir o quanto a gente mudou.", autor: "Nelson Mandela" },
+        { texto: "Sonhar é verbo: é seguir, é pensar, inspirar e fazer força, insistir, é lutar, transpirar. São mil verbos que vem antes do verbo realizar.", autor: "Bráulio Bessa" },
+        { texto: "Sábio é aquele que conhece os limites da própria ignorância.", autor: "Sócrates" },
+        { texto: "Um dia, quando olhares para trás, verás que os dias mais belos foram aqueles em que lutaste.", autor: "Sigmund Freud" },
+        { texto: "Maravilhas nunca faltaram ao mundo; o que sempre falta é a capacidade de senti-las e admirá-las.", autor: "Mario Quintana" },
+        { texto: "Qualquer pessoa de sucesso sabe que é uma peça importante, mas sabe que não conseguirá nada sozinho.", autor: "Bernardinho" },
+        { texto: "A vitalidade é demonstrada não apenas pela persistência, mas pela capacidade de começar de novo.", autor: "F. Scott Fitzgerald" },
+        { texto: "A vida se contrai e se expande proporcionalmente à coragem do indivíduo.", autor: "Anaïs Nin" },
+        { texto: "Só é lutador quem sabe lutar consigo mesmo.", autor: "Carlos Drummond de Andrade" },
+      ];
+
+      var fraseEl = document.getElementById("frase-motivacional");
+      if (fraseEl && frasesMotivacionais.length) {
+        var indice = Math.floor(Math.random() * frasesMotivacionais.length);
+        var frase = frasesMotivacionais[indice];
+        var html = "<span class=\"hub-welcome-quote-text\">“" + frase.texto + "”</span>";
+        if (frase.autor) {
+          html += "<cite class=\"hub-welcome-quote-autor\">— " + frase.autor + "</cite>";
+        }
+        fraseEl.innerHTML = html;
+      }
+
+      fetch(apiBase + "/api/contas/meu-perfil", { headers: ME_APP.getAuthHeaders() })
+        .then(function (r) {
+          return r.json();
+        })
+        .then(function (data) {
+          if (!data.ok || !data.perfil) return;
+          if (data.perfil.fotoExibicao) {
+            setAvatar(data.perfil.fotoExibicao, data.perfil.nome || nomeCompleto);
+          } else if (data.perfil.nome) {
+            setAvatar(null, data.perfil.nome);
+          }
+        })
+        .catch(function () {});
+
+      var grid = document.getElementById("pilares-grid");
+      ME_PILARES_50.forEach(function (pilar) {
+        var li = document.createElement("li");
+        li.innerHTML =
+          '<a class="pilar-card pilar-card--link pilar-card--compact" href="' + pilar.href + '">' +
+          '<img class="pilar-card-icon" src="' + pilar.icon + '" alt="" width="64" height="64" decoding="async">' +
+          "<h3 class=\"pilar-card-title\">" + pilar.titulo + "</h3>" +
+          "</a>";
+        grid.appendChild(li);
+      });
+
+      ME_ANALYTICS.track("area_50_visita", { page: "area_50" });
+    })();
+  </script>
+  <script src="js/site-brand.js?v=2"></script>
+  <script src="js/app-shell.js?v=24"></script>
+  <script src="js/a11y-bar.js?v=1"></script>
+</body>
+</html>

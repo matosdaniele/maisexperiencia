@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Alertas de medicação 50+ — receba lembretes dos seus remédios por Telegram ou e-mail — Mais Experiência">
+  <title>Alertas de medicação 50+ — Mais Experiência</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app-page.css?v=53">
+  <link rel="stylesheet" href="css/a11y-bar.css?v=14">
+  <script src="js/site-config.js"></script>
+  <script src="js/app-common.js?v=13"></script>
+  <script src="js/analytics.js?v=4"></script>
+</head>
+<body>
+  <main class="wrap wrap--hub">
+    <a class="back-link" href="bem_estar_50.html">← Voltar a Bem-estar</a>
+    <h1 class="page-title-keep">Alertas de medicação</h1>
+    <p class="lead">
+      Cadastre seus medicamentos e horários. Nós enviamos um lembrete no horário certo,
+      pelo canal que você escolher — <strong>Telegram</strong> ou <strong>e-mail</strong>. É gratuito.
+    </p>
+
+    <p class="tn-aviso" role="note">
+      Estes lembretes são um apoio e não substituem a orientação do seu médico ou farmacêutico.
+      Seus dados de saúde só são usados para enviar os avisos que você pediu, no canal que você escolheu.
+    </p>
+
+    <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+
+    <!-- 1. Canal de envio -->
+    <section class="tn-secao" aria-labelledby="lm-canal-title">
+      <h2 id="lm-canal-title" class="tn-secao-title">1. Como você quer receber</h2>
+
+      <div class="lm-canais" role="radiogroup" aria-label="Canal de envio">
+        <label class="lm-canal-opcao">
+          <input type="radio" name="lm-canal" value="telegram" id="lm-canal-telegram">
+          <span class="lm-canal-corpo">
+            <strong>Telegram</strong>
+            <span class="field-hint">App gratuito de mensagens. Vincule sua conta uma vez.</span>
+          </span>
+        </label>
+        <label class="lm-canal-opcao">
+          <input type="radio" name="lm-canal" value="email" id="lm-canal-email">
+          <span class="lm-canal-corpo">
+            <strong>E-mail</strong>
+            <span class="field-hint" id="lm-email-hint">Enviaremos para o e-mail da sua conta.</span>
+          </span>
+        </label>
+      </div>
+
+      <!-- Bloco de vínculo do Telegram -->
+      <div class="lm-telegram" id="lm-telegram-box" hidden>
+        <p class="lm-telegram-status" id="lm-telegram-status">Verificando vínculo…</p>
+        <div id="lm-telegram-acoes">
+          <button type="button" class="btn btn-small" id="lm-btn-vincular">Vincular meu Telegram</button>
+          <button type="button" class="btn btn-small btn-danger" id="lm-btn-desvincular" hidden>Desvincular</button>
+        </div>
+        <div class="lm-telegram-convite" id="lm-telegram-convite" hidden>
+          <p class="field-hint">1. Toque no link (ou aponte a câmera para o QR) · 2. Toque em <strong>Iniciar/Start</strong>.</p>
+          <p><a class="lm-telegram-link" id="lm-telegram-link" href="#" target="_blank" rel="noopener">Abrir o bot no Telegram</a></p>
+          <img class="lm-telegram-qr" id="lm-telegram-qr" alt="QR code para abrir o bot no Telegram" width="180" height="180" hidden>
+          <p class="field-hint">Depois de tocar em Iniciar, clique em <strong>«Já vinculei»</strong>.</p>
+          <button type="button" class="btn btn-small btn-secondary" id="lm-btn-recheck">Já vinculei</button>
+        </div>
+      </div>
+
+      <label class="lm-optin">
+        <input type="checkbox" id="lm-optin">
+        <span>Quero receber os lembretes de medicação neste canal.</span>
+      </label>
+
+      <p class="actions">
+        <button type="button" class="btn" id="lm-btn-salvar-pref">Salvar preferências</button>
+      </p>
+    </section>
+
+    <!-- 2. Medicamentos -->
+    <section class="tn-secao" aria-labelledby="lm-med-title">
+      <h2 id="lm-med-title" class="tn-secao-title">2. Meus medicamentos</h2>
+
+      <form id="lm-form" class="lm-form" novalidate>
+        <input type="hidden" id="lm-edit-id" value="">
+        <div class="perfil-form-grid">
+          <div class="perfil-field">
+            <label for="lm-nome">Medicamento</label>
+            <input type="text" id="lm-nome" name="nome" maxlength="80" required placeholder="Ex.: Losartana">
+          </div>
+          <div class="perfil-field">
+            <label for="lm-dose">Dose (opcional)</label>
+            <input type="text" id="lm-dose" name="dose" maxlength="80" placeholder="Ex.: 50 mg, 1 comprimido">
+          </div>
+        </div>
+
+        <fieldset class="lm-fieldset">
+          <legend>Horários</legend>
+          <div id="lm-horarios" class="lm-horarios"></div>
+          <button type="button" class="btn btn-small btn-secondary" id="lm-add-horario">+ Adicionar horário</button>
+        </fieldset>
+
+        <fieldset class="lm-fieldset">
+          <legend>Dias da semana</legend>
+          <label class="lm-dia"><input type="checkbox" id="lm-dia-todos" checked> Todos os dias</label>
+          <div class="lm-dias" id="lm-dias" hidden>
+            <label class="lm-dia"><input type="checkbox" class="lm-dia-cb" value="0"> Dom</label>
+            <label class="lm-dia"><input type="checkbox" class="lm-dia-cb" value="1"> Seg</label>
+            <label class="lm-dia"><input type="checkbox" class="lm-dia-cb" value="2"> Ter</label>
+            <label class="lm-dia"><input type="checkbox" class="lm-dia-cb" value="3"> Qua</label>
+            <label class="lm-dia"><input type="checkbox" class="lm-dia-cb" value="4"> Qui</label>
+            <label class="lm-dia"><input type="checkbox" class="lm-dia-cb" value="5"> Sex</label>
+            <label class="lm-dia"><input type="checkbox" class="lm-dia-cb" value="6"> Sáb</label>
+          </div>
+        </fieldset>
+
+        <div class="perfil-field">
+          <label for="lm-instrucoes">Instruções (opcional)</label>
+          <input type="text" id="lm-instrucoes" name="instrucoes" maxlength="200" placeholder="Ex.: tomar após o café">
+        </div>
+
+        <p class="actions">
+          <button type="submit" class="btn" id="lm-btn-salvar-med">Adicionar medicamento</button>
+          <button type="button" class="btn btn-secondary" id="lm-btn-cancelar-edicao" hidden>Cancelar edição</button>
+        </p>
+      </form>
+
+      <ul class="lm-lista" id="lm-lista" aria-live="polite"></ul>
+    </section>
+  </main>
+
+  <script src="src/lib/medicacao.js?v=1"></script>
+  <script src="js/lembretes-50.js?v=1"></script>
+  <script src="js/site-brand.js?v=2"></script>
+  <script src="js/app-shell.js?v=24"></script>
+  <script src="js/a11y-bar.js?v=1"></script>
+</body>
+</html>

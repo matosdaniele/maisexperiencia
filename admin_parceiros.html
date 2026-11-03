@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Aprovação de parceiros — Admin Mais Experiência">
+  <title>Admin parceiros — Mais Experiência</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app-page.css?v=35">
+  <link rel="stylesheet" href="css/a11y-bar.css?v=14">
+  <script src="js/site-config.js"></script>
+  <script src="js/app-common.js?v=12"></script>
+  <script src="js/analytics.js?v=4"></script>
+  <script src="js/admin-page.js"></script>
+</head>
+<body>
+  <main class="wrap wrap--admin">
+    <a class="back-link" href="admin.html">← Voltar à área admin</a>
+    <h1>Admin — pedidos de parceiro</h1>
+    <p class="lead">Aprove ou rejeite pedidos. Ao aprovar, o parceiro recebe e-mail para criar a senha.</p>
+
+
+    <div id="panel">
+      <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+      <div class="filtros">
+        <button type="button" class="btn btn-secondary btn-small" data-status="pendente">Pendentes</button>
+        <button type="button" class="btn btn-secondary btn-small" data-status="aprovado">Aguardando senha</button>
+        <button type="button" class="btn btn-secondary btn-small" data-status="activo">Ativos</button>
+        <button type="button" class="btn btn-secondary btn-small" data-status="rejeitado">Rejeitados</button>
+        <button type="button" class="btn btn-secondary btn-small" data-status="todas">Todas</button>
+      </div>
+      <div id="lista"></div>
+      <p class="actions">
+        <button type="button" class="btn btn-secondary" id="btn-reload">Atualizar</button>
+      </p>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      if (!ME_ADMIN_PAGE.boot()) return;
+      var apiBase = ME_APP.getApiBase();
+      var panel = document.getElementById("panel");
+      var lista = document.getElementById("lista");
+      var feedback = document.getElementById("feedback");
+      var statusAtual = "pendente";
+
+      function getKey() {
+        return ME_ADMIN_PAGE.getKey();
+      }
+
+      function showFeedback(message, type) {
+        feedback.hidden = false;
+        feedback.textContent = message;
+        feedback.className = "feedback feedback--" + type;
+      }
+
+      function formatDate(value) {
+        if (!value) return "—";
+        return new Date(value).toLocaleString("pt-BR");
+      }
+
+      function renderCard(parceiro) {
+        var card = document.createElement("article");
+        card.className = "parceiro-card";
+
+        card.innerHTML =
+          "<h2>" + parceiro.empresa + "</h2>" +
+          "<p class=\"parceiro-meta\">" + parceiro.status + " · " + formatDate(parceiro.createdAt) + "</p>" +
+          "<p class=\"parceiro-meta\"><strong>Responsável:</strong> " + parceiro.nome + "</p>" +
+          "<p class=\"parceiro-meta\"><strong>E-mail:</strong> " + parceiro.email + "</p>" +
+          "<p class=\"parceiro-meta\"><strong>Telefone:</strong> " + (parceiro.telefone || "—") + "</p>";
+
+        if (parceiro.status === "pendente") {
+          var motivo = document.createElement("textarea");
+          motivo.placeholder = "Motivo da rejeição (opcional)";
+          motivo.id = "motivo-" + parceiro._id;
+
+          var acoes = document.createElement("div");
+          acoes.className = "acoes";
+
+          var btnAprovar = document.createElement("button");
+          btnAprovar.type = "button";
+          btnAprovar.className = "btn btn-small";
+          btnAprovar.textContent = "Aprovar";
+          btnAprovar.addEventListener("click", function () {
+            aprovar(parceiro._id);
+          });
+
+          var btnRejeitar = document.createElement("button");
+          btnRejeitar.type = "button";
+          btnRejeitar.className = "btn btn-secondary btn-small";
+          btnRejeitar.textContent = "Rejeitar";
+          btnRejeitar.addEventListener("click", function () {
+            rejeitar(parceiro._id, motivo.value.trim());
+          });
+
+          acoes.appendChild(btnAprovar);
+          acoes.appendChild(btnRejeitar);
+          card.appendChild(motivo);
+          card.appendChild(acoes);
+        }
+
+        if (parceiro.motivoRejeicao) {
+          var motivoEl = document.createElement("p");
+          motivoEl.className = "parceiro-meta";
+          motivoEl.innerHTML = "<strong>Motivo:</strong> " + parceiro.motivoRejeicao;
+          card.appendChild(motivoEl);
+        }
+
+        if (parceiro.status === "aprovado") {
+          var acoesAprovado = document.createElement("div");
+          acoesAprovado.className = "acoes";
+
+          var btnReenviar = document.createElement("button");
+          btnReenviar.type = "button";
+          btnReenviar.className = "btn btn-secondary btn-small";
+          btnReenviar.textContent = "Reenviar e-mail de senha";
+          btnReenviar.addEventListener("click", function () {
+            reenviarAtivacao(parceiro._id);
+          });
+
+          acoesAprovado.appendChild(btnReenviar);
+          card.appendChild(acoesAprovado);
+        }
+
+        return card;
+      }
+
+      function carregar() {
+        feedback.hidden = true;
+        lista.textContent = "Carregando…";
+
+        fetch(apiBase + "/api/admin/parceiros?status=" + encodeURIComponent(statusAtual), {
+          headers: { "X-Admin-Key": getKey() },
+        })
+          .then(function (response) {
+            return response.json().then(function (data) {
+              return { ok: response.ok, data: data };
+            });
+          })
+          .then(function (result) {
+            if (!result.ok) {
+              if (result.data.error === "Não autorizado.") {
+                ME_ADMIN_PAGE.handle401();
+                return;
+              }
+              lista.textContent = "";
+              showFeedback(result.data.error || "Erro ao carregar.", "erro");
+              return;
+            }
+            lista.textContent = "";
+            if (!result.data.parceiros.length) {
+              lista.textContent = "Nenhum pedido neste filtro.";
+              return;
+            }
+            result.data.parceiros.forEach(function (parceiro) {
+              lista.appendChild(renderCard(parceiro));
+            });
+          })
+          .catch(function () {
+            lista.textContent = "";
+            showFeedback("Erro de rede.", "erro");
+          });
+      }
+
+      function aprovar(id) {
+        fetch(apiBase + "/api/admin/parceiros/" + id + "/aprovar", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Admin-Key": getKey(),
+          },
+          body: "{}",
+        })
+          .then(function (response) {
+            return response.json().then(function (data) {
+              return { ok: response.ok, data: data };
+            });
+          })
+          .then(function (result) {
+            if (result.ok) {
+              if (window.ME_ANALYTICS) {
+                ME_ANALYTICS.track("admin_parceiro_aprovado", { page: "admin_parceiros" });
+              }
+              var msg = result.data.message;
+              if (result.data.emailEnviado === false) {
+                msg += " Detalhe: " + (result.data.emailErro || "SMTP");
+              }
+              showFeedback(msg, result.data.emailEnviado === false ? "erro" : "ok");
+              carregar();
+              return;
+            }
+            showFeedback(result.data.error || "Não foi possível aprovar.", "erro");
+          })
+          .catch(function () {
+            showFeedback("Erro de rede.", "erro");
+          });
+      }
+
+      function rejeitar(id, motivoRejeicao) {
+        fetch(apiBase + "/api/admin/parceiros/" + id + "/rejeitar", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Admin-Key": getKey(),
+          },
+          body: JSON.stringify({ motivoRejeicao: motivoRejeicao }),
+        })
+          .then(function (response) {
+            return response.json().then(function (data) {
+              return { ok: response.ok, data: data };
+            });
+          })
+          .then(function (result) {
+            if (result.ok) {
+              showFeedback(result.data.message, "ok");
+              if (window.ME_ANALYTICS) {
+                ME_ANALYTICS.track("admin_parceiro_rejeitado", { page: "admin_parceiros" });
+              }
+              carregar();
+              return;
+            }
+            showFeedback(result.data.error || "Não foi possível rejeitar.", "erro");
+          })
+          .catch(function () {
+            showFeedback("Erro de rede.", "erro");
+          });
+      }
+
+      function reenviarAtivacao(id) {
+        fetch(apiBase + "/api/admin/parceiros/" + id + "/reenviar-ativacao", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Admin-Key": getKey(),
+          },
+          body: "{}",
+        })
+          .then(function (response) {
+            return response.json().then(function (data) {
+              return { ok: response.ok, data: data };
+            });
+          })
+          .then(function (result) {
+            if (result.ok) {
+              showFeedback(result.data.message, "ok");
+              return;
+            }
+            var msg = result.data.message || result.data.error || "Não foi possível reenviar.";
+            if (result.data.emailErro) msg += " Detalhe: " + result.data.emailErro;
+            showFeedback(msg, "erro");
+          })
+          .catch(function () {
+            showFeedback("Erro de rede.", "erro");
+          });
+      }
+
+      document.getElementById("btn-reload").addEventListener("click", carregar);
+
+      document.querySelectorAll("[data-status]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          statusAtual = btn.getAttribute("data-status");
+          carregar();
+        });
+      });
+
+      carregar();
+    })();
+  </script>
+  <script src="js/admin-common.js?v=1"></script>
+  <script src="js/site-brand.js?v=2"></script>
+  <script src="js/app-shell.js?v=23"></script>
+  <script src="js/a11y-bar.js?v=1"></script>
+</body>
+</html>

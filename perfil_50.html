@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Perfil 50+ — Mais Experiência">
+  <title>Perfil — Mais Experiência</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app-page.css?v=45">
+  <link rel="stylesheet" href="css/a11y-bar.css?v=14">
+  <script src="js/site-config.js"></script>
+  <script src="js/app-common.js?v=13"></script>
+  <script src="js/analytics.js?v=4"></script>
+</head>
+<body>
+  <main class="wrap">
+    <a class="back-link" href="area_50.html">← Voltar à área 50+</a>
+    <h1>Perfil</h1>
+    <p class="lead">Complete seu perfil para aparecer na Comunidade. Foto com rosto visível e dados leves — sem endereço completo.</p>
+
+    <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+
+    <h2 id="perfil-foto-title" class="perfil-section-title">Foto</h2>
+    <section class="card card--hub" aria-labelledby="perfil-foto-title">
+      <div class="perfil-foto-crop" id="foto-crop">
+        <div
+          class="perfil-foto-crop-frame"
+          id="foto-crop-frame"
+          role="img"
+          aria-label="Pré-visualização da foto do perfil"
+        >
+          <p class="perfil-foto-placeholder" id="foto-placeholder">Nenhuma foto selecionada</p>
+          <img id="foto-preview" class="perfil-foto-crop-img" alt="" draggable="false" hidden>
+        </div>
+        <p class="field-hint perfil-foto-crop-hint" id="foto-crop-hint" hidden>Arraste a foto para ajustar a posição.</p>
+      </div>
+      <form id="form-foto" novalidate>
+        <div>
+          <label for="arquivo-foto" id="label-foto">Adicionar foto</label>
+          <input id="arquivo-foto" name="arquivo-foto" type="file" accept="image/png,image/jpeg,image/webp">
+          <p class="field-hint">1 foto com o rosto visível. PNG, JPG ou WebP · reduzida automaticamente ao salvar.</p>
+        </div>
+        <p class="actions">
+          <button type="submit" class="btn" id="btn-salvar-foto" disabled>Salvar foto</button>
+        </p>
+      </form>
+    </section>
+
+    <h2 id="perfil-dados-title" class="perfil-section-title">Perfil</h2>
+    <section class="card card--hub" aria-labelledby="perfil-dados-title">
+      <form id="form-comunidade" novalidate>
+        <div class="perfil-form-grid">
+          <div>
+            <label for="nome-exibicao">Nome (primeiro ou apelido)</label>
+            <input id="nome-exibicao" name="nomeExibicao" type="text" autocomplete="nickname" required maxlength="40" minlength="2">
+          </div>
+          <div>
+            <label for="idade">Idade</label>
+            <input id="idade" name="idade" type="number" readonly tabindex="-1" aria-readonly="true">
+            <p class="field-hint">Calculada a partir da data de nascimento do cadastro.</p>
+          </div>
+        </div>
+
+        <fieldset class="interesses-fieldset">
+          <legend>Localidade</legend>
+          <div class="perfil-form-grid perfil-form-grid--3">
+            <div>
+              <label for="bairro">Bairro <span class="label-optional">(opcional)</span></label>
+              <input id="bairro" name="bairro" type="text" autocomplete="address-level3" maxlength="80">
+            </div>
+            <div>
+              <label for="cidade">Cidade</label>
+              <input id="cidade" name="cidade" type="text" autocomplete="address-level2" required maxlength="80" minlength="2">
+            </div>
+            <div>
+              <label for="estado-uf">Estado</label>
+              <select id="estado-uf" name="estado" required>
+                <option value="">Selecione</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="interesses-fieldset">
+          <legend>Intenção</legend>
+          <div class="perfil-radio-row" role="radiogroup" aria-label="Intenção">
+            <label class="perfil-radio-option"><input type="radio" name="intencao" value="amizade" required> Amizade</label>
+            <label class="perfil-radio-option"><input type="radio" name="intencao" value="namoro"> Namoro</label>
+            <label class="perfil-radio-option"><input type="radio" name="intencao" value="ambos"> Amizade e namoro</label>
+          </div>
+        </fieldset>
+
+        <div>
+          <label for="bio">Bio curta</label>
+          <textarea id="bio" name="bio" rows="3" maxlength="280" required placeholder="O que você gosta de fazer no fim de semana?"></textarea>
+          <p class="field-hint"><span id="bio-count">0</span>/280</p>
+        </div>
+
+        <fieldset class="interesses-fieldset">
+          <legend>Interesses</legend>
+          <p class="field-hint field-hint--spaced-bottom" id="interesses-count">Selecione de 3 a 8.</p>
+          <div class="interesses-grid" id="interesses-grid"></div>
+          <div class="perfil-interesse-outro" id="interesse-outro-wrap">
+            <label class="interesses-option">
+              <input type="checkbox" name="interesseOutroAtivo" id="interesse-outro-ativo" value="1">
+              <span>Outros</span>
+            </label>
+            <div>
+              <label for="interesse-outro" class="visually-hidden">Descreva outro interesse</label>
+              <input
+                id="interesse-outro"
+                name="interesseOutro"
+                type="text"
+                maxlength="60"
+                placeholder="Descreva (opcional)"
+                disabled
+              >
+            </div>
+          </div>
+        </fieldset>
+
+        <div>
+          <label for="genero">Gênero</label>
+          <select id="genero" name="genero" required>
+            <option value="">Selecione</option>
+            <option value="cisgenero">Cisgênero (identificação com o sexo de nascimento)</option>
+            <option value="transgenero">Transgênero (identificação diferente do sexo de nascimento)</option>
+            <option value="nao_binario">Não-binário (identificação fora da divisão estrita entre homem e mulher)</option>
+            <option value="prefiro_nao_dizer">Prefiro não dizer</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="estado-civil">Estado civil <span class="label-optional">(opcional)</span></label>
+          <select id="estado-civil" name="estadoCivil">
+            <option value="">Não informar</option>
+            <option value="solteiro">Solteiro(a)</option>
+            <option value="casado">Casado(a)</option>
+            <option value="divorciado">Divorciado(a)</option>
+            <option value="viuvo">Viúvo(a)</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+
+        <p class="actions">
+          <button type="submit" class="btn" id="btn-salvar-comunidade">Salvar perfil</button>
+        </p>
+      </form>
+    </section>
+  </main>
+
+  <script src="js/perfil-50.js?v=8"></script>
+  <script src="js/site-brand.js?v=2"></script>
+  <script src="js/app-shell.js?v=24"></script>
+  <script src="js/a11y-bar.js?v=1"></script>
+</body>
+</html>

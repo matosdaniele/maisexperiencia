@@ -1,0 +1,31 @@
+.env
+.env.*
+!/.env.example
+deploy/.secrets.local
+node_modules/
+__pycache__/
+*.pyc
+.venv-ppt/
+.venv-docx/
+.venv-video/
+*.log
+
+# Material interno — fica só na máquina, fora do GitHub
+/file/
+/deploy/
+/infra/
+/fgtas/
+
+# Geradores de planos, deck e vídeos internos
+/generate-investor-deck.sh
+/generate-story-video.sh
+/scripts/generate-investor-deck.sh
+/scripts/generate_identidade_pdf.sh
+/scripts/generate_investor_deck_pptx.py
+/scripts/generate_story_video.py
+/scripts/grafico_custos_pn.py
+/scripts/insert-produtividade-plano-negocio.py
+/scripts/investor_deck_data.py
+/scripts/merge_plano_negocio_drive.py
+/scripts/requirements-pptx.txt
+/scripts/update-plano-financeiro-revisao2026.py

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Segurança da conta 50+ — Mais Experiência">
+  <title>Segurança — Mais Experiência</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app-page.css?v=43">
+  <link rel="stylesheet" href="css/a11y-bar.css?v=14">
+  <script src="js/site-config.js"></script>
+  <script src="js/app-common.js?v=13"></script>
+  <script src="js/analytics.js?v=4"></script>
+</head>
+<body>
+  <main class="wrap">
+    <a class="back-link" href="area_50.html">← Voltar à área 50+</a>
+    <h1>Segurança</h1>
+    <p class="lead">Altere a senha de acesso ou cancele a conta, se não quiser mais continuar na plataforma.</p>
+
+    <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+
+    <h2 id="perfil-senha-heading" class="perfil-section-title">Alterar senha</h2>
+    <section class="card card--hub" aria-labelledby="perfil-senha-heading">
+      <form id="form-senha" novalidate>
+        <div>
+          <label for="senha-atual">Senha atual</label>
+          <input id="senha-atual" name="senhaAtual" type="password" autocomplete="current-password" required>
+        </div>
+        <div>
+          <label for="senha-nova">Nova senha</label>
+          <input id="senha-nova" name="senhaNova" type="password" autocomplete="new-password" required minlength="6">
+        </div>
+        <div>
+          <label for="senha-nova-confirma">Confirmar nova senha</label>
+          <input id="senha-nova-confirma" name="senhaNovaConfirma" type="password" autocomplete="new-password" required minlength="6">
+        </div>
+        <p class="actions">
+          <button type="submit" class="btn" id="btn-salvar-senha">Alterar senha</button>
+        </p>
+      </form>
+    </section>
+
+    <h2 id="perfil-cancelar-heading" class="perfil-section-title perfil-subheading--danger">Cancelar a conta</h2>
+    <section class="card card--hub" aria-labelledby="perfil-cancelar-heading">
+      <div class="perfil-alerta-perigo" role="note">
+        <p><strong>Atenção: esta ação é permanente.</strong></p>
+        <p>
+          Ao cancelar a conta, você perde o acesso à plataforma e todos os seus dados serão excluídos:
+          perfil, foto, currículo, candidaturas, inscrições e preferências da Comunidade.
+        </p>
+        <p>Não será possível recuperar essas informações depois.</p>
+      </div>
+      <form id="form-cancelar-conta" novalidate>
+        <div class="checkbox-row checkbox-row--consent">
+          <input id="cancelar-ciente" name="ciente" type="checkbox" required>
+          <label for="cancelar-ciente">
+            Estou ciente de que vou perder todos os meus dados e que esta ação não pode ser desfeita.
+          </label>
+        </div>
+        <div>
+          <label for="cancelar-confirmacao">Digite <strong>CANCELAR</strong> para confirmar</label>
+          <input id="cancelar-confirmacao" name="confirmacao" type="text" autocomplete="off" required placeholder="CANCELAR" maxlength="20">
+        </div>
+        <div>
+          <label for="cancelar-senha">Senha atual</label>
+          <input id="cancelar-senha" name="senhaAtual" type="password" autocomplete="current-password" required>
+        </div>
+        <p class="actions">
+          <button type="submit" class="btn btn-danger" id="btn-cancelar-conta">Cancelar a conta e excluir meus dados</button>
+        </p>
+      </form>
+    </section>
+  </main>
+
+  <script src="js/seguranca-50.js?v=1"></script>
+  <script src="js/site-brand.js?v=2"></script>
+  <script src="js/app-shell.js?v=24"></script>
+  <script src="js/a11y-bar.js?v=1"></script>
+</body>
+</html>

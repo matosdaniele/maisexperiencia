@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="logo.png" type="image/png">
+  <meta http-equiv="refresh" content="0;url=area_50.html">
+  <title>Redirecionando… — Mais Experiência</title>
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var id = params.get("id") || "";
+      if (id) {
+        window.location.replace("emprego_50.html?id=" + encodeURIComponent(id));
+        return;
+      }
+      if (!params.toString()) {
+        window.location.replace("area_50.html");
+        return;
+      }
+      var tipo = params.get("tipo") || "";
+      var map = {
+        curso: "cursos_50.html",
+        evento: "comunidade_50.html",
+        bem_estar: "bem_estar_50.html",
+        vaga: "emprego_50.html",
+      };
+      if (tipo && map[tipo]) {
+        window.location.replace(map[tipo] + "?" + params.toString());
+        return;
+      }
+      window.location.replace("area_50.html");
+    })();
+  </script>
+</head>
+<body>
+  <p><a href="area_50.html">Continuar para a área 50+</a></p>
+</body>
+</html>

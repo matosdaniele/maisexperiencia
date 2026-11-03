@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Minhas publicações — Área do parceiro Mais Experiência">
+  <title>Minhas publicações — Mais Experiência</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app-page.css?v=35">
+  <link rel="stylesheet" href="css/a11y-bar.css?v=14">
+  <script src="js/site-config.js"></script>
+  <script src="js/app-common.js?v=12"></script>
+  <script src="js/analytics.js?v=4"></script>
+</head>
+<body>
+  <main class="wrap">
+    <a class="back-link" id="back-link" href="area_parceiro.html">← Voltar à área do parceiro</a>
+    <h1 id="page-title">Minhas publicações</h1>
+    <p class="lead" id="page-lead">Acompanhe o estado de vigência das suas vagas, cursos, comunidade e serviços de bem-estar.</p>
+
+    <div class="vigencia-legenda" aria-label="Legenda de vigência">
+      <span class="vigencia-legenda-item">
+        <span class="status-aviso status-aviso--ativo">Ativo</span>
+        entre data início e data fim
+      </span>
+      <span class="vigencia-legenda-item">
+        <span class="status-aviso status-aviso--ultimo-dia">Último dia</span>
+        data fim igual a hoje
+      </span>
+      <span class="vigencia-legenda-item">
+        <span class="status-aviso status-aviso--inativo">Inativo</span>
+        antes do início ou após o fim
+      </span>
+    </div>
+
+    <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+    <ul class="publicacao-list" id="lista" aria-live="polite"></ul>
+  </main>
+
+  <script src="js/publicacoes-parceiro.js?v=8"></script>
+  <script src="js/site-brand.js?v=2"></script>
+  <script src="js/app-shell.js?v=23"></script>
+  <script src="js/a11y-bar.js?v=1"></script>
+</body>
+</html>

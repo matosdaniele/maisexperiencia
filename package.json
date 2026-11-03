@@ -1,0 +1,25 @@
+{
+  "name": "maisexperiencia",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Portal Mais Experiência — landing e API piloto",
+  "scripts": {
+    "start": "node scripts/api-server.js",
+    "dev": "node scripts/api-server.js",
+    "smoke": "bash scripts/smoke-test.sh",
+    "verify:match": "node scripts/verify-match-consistency.js",
+    "verify:treino": "node scripts/verify-treino-nutricao.js",
+    "verify:medicacao": "node scripts/verify-medicacao.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongodb": "^6.12.0",
+    "nodemailer": "^6.10.0",
+    "pdf-parse": "^1.1.1"
+  }
+}

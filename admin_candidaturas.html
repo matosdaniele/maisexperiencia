@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Candidaturas e contratações — Admin Mais Experiência">
+  <title>Admin candidaturas — Mais Experiência</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app-page.css?v=35">
+  <link rel="stylesheet" href="css/a11y-bar.css?v=14">
+  <script src="js/site-config.js"></script>
+  <script src="js/app-common.js?v=12"></script>
+  <script src="js/analytics.js?v=4"></script>
+  <script src="js/admin-page.js"></script>
+</head>
+<body>
+  <main class="wrap wrap--admin">
+    <a class="back-link" href="admin.html">← Voltar à área admin</a>
+    <h1>Admin — candidaturas</h1>
+    <p class="lead">Acompanhe as candidaturas às vagas dos parceiros e as contratações de 50+.</p>
+
+    <div id="panel">
+      <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+      <p class="totais" id="totais"></p>
+      <p class="actions">
+        <label for="filtro-status">Filtrar por estado:</label>
+        <select id="filtro-status">
+          <option value="todas">Todas</option>
+          <option value="enviada">Enviada</option>
+          <option value="em_analise">Em análise</option>
+          <option value="entrevista">Entrevista</option>
+          <option value="contratada">Contratada</option>
+          <option value="nao_selecionada">Não selecionada</option>
+        </select>
+        <button type="button" class="btn btn-secondary" id="btn-reload">Atualizar</button>
+      </p>
+      <div class="admin-table-scroll">
+      <table class="admin-inscricoes-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Candidato</th>
+            <th>Vaga / Empresa</th>
+            <th>Status</th>
+            <th>Taxa contratação</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      if (!ME_ADMIN_PAGE.boot()) return;
+      var apiBase = ME_APP.getApiBase();
+      var tbody = document.getElementById("tbody");
+      var feedback = document.getElementById("feedback");
+      var totaisEl = document.getElementById("totais");
+      var filtroStatus = document.getElementById("filtro-status");
+
+      var STATUS_LABELS = {
+        enviada: "Enviada",
+        em_analise: "Em análise",
+        entrevista: "Entrevista",
+        contratada: "Contratada",
+        nao_selecionada: "Não selecionada",
+      };
+
+      function getKey() {
+        return ME_ADMIN_PAGE.getKey();
+      }
+
+      function showFeedback(message, type) {
+        feedback.hidden = false;
+        feedback.textContent = message;
+        feedback.className = "feedback feedback--" + type;
+      }
+
+      function escapeHtml(value) {
+        return String(value || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function formatDate(value) {
+        if (!value) return "—";
+        return new Date(value).toLocaleString("pt-BR");
+      }
+
+      function formatBrl(value) {
+        return "R$ " + Number(value || 0).toFixed(2).replace(".", ",");
+      }
+
+      function pagarCobranca(id, btn) {
+        btn.disabled = true;
+        fetch(apiBase + "/api/admin/candidaturas/" + id + "/cobranca/pagar", {
+          method: "PATCH",
+          headers: { "X-Admin-Key": getKey() },
+        })
+          .then(function (response) {
+            if (response.status === 401) {
+              ME_ADMIN_PAGE.handle401();
+              return null;
+            }
+            return response.json();
+          })
+          .then(function (data) {
+            if (!data) return;
+            if (data.ok) {
+              showFeedback("Pagamento da contratação registrado.", "ok");
+              if (window.ME_ANALYTICS) {
+                ME_ANALYTICS.track("admin_contratacao_paga", { page: "admin_candidaturas" });
+              }
+              loadCandidaturas();
+              return;
+            }
+            showFeedback(data.error || "Erro ao registrar pagamento.", "erro");
+            btn.disabled = false;
+          })
+          .catch(function () {
+            showFeedback("Erro de conexão.", "erro");
+            btn.disabled = false;
+          });
+      }
+
+      function setStatus(id, novoStatus, btn) {
+        btn.disabled = true;
+        fetch(apiBase + "/api/admin/candidaturas/" + id + "/status", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", "X-Admin-Key": getKey() },
+          body: JSON.stringify({ status: novoStatus }),
+        })
+          .then(function (response) {
+            if (response.status === 401) {
+              ME_ADMIN_PAGE.handle401();
+              return null;
+            }
+            return response.json();
+          })
+          .then(function (data) {
+            if (!data) return;
+            if (data.ok) {
+              showFeedback("Estado atualizado para «" + (STATUS_LABELS[novoStatus] || novoStatus) + "».", "ok");
+              if (window.ME_ANALYTICS) {
+                ME_ANALYTICS.track("admin_candidatura_status", { page: "admin_candidaturas", status: novoStatus });
+              }
+              loadCandidaturas();
+              return;
+            }
+            showFeedback(data.error || "Erro ao atualizar.", "erro");
+            btn.disabled = false;
+          })
+          .catch(function () {
+            showFeedback("Erro de conexão.", "erro");
+            btn.disabled = false;
+          });
+      }
+
+      function loadCandidaturas() {
+        var status = filtroStatus.value || "todas";
+        fetch(apiBase + "/api/admin/candidaturas?status=" + encodeURIComponent(status), {
+          headers: { "X-Admin-Key": getKey() },
+        })
+          .then(function (response) {
+            return response.json().then(function (data) {
+              return { ok: response.ok, status: response.status, data: data };
+            });
+          })
+          .then(function (result) {
+            if (result.status === 401) {
+              ME_ADMIN_PAGE.handle401();
+              return;
+            }
+            if (!result.ok) {
+              showFeedback(result.data.error || "Erro ao carregar.", "erro");
+              return;
+            }
+
+            feedback.hidden = true;
+            var t = result.data.totais || {};
+            totaisEl.textContent =
+              "Contratações: " + (t.contratacoes || 0) +
+              " · Receita recebida: " + formatBrl(t.receitaRecebidaBrl) +
+              " · A receber: " + formatBrl(t.receitaPendenteBrl);
+
+            tbody.innerHTML = "";
+            if (!result.data.candidaturas.length) {
+              tbody.innerHTML = "<tr><td colspan=\"6\">Nenhuma candidatura encontrada.</td></tr>";
+              return;
+            }
+
+            result.data.candidaturas.forEach(function (item) {
+              var tr = document.createElement("tr");
+              var contato = item.telefone ? "<br><small>" + escapeHtml(item.telefone) + "</small>" : "";
+              var contratada = item.status === "contratada";
+              var cobranca = item.cobranca || null;
+              var pago = !!(cobranca && cobranca.status === "paga");
+
+              var taxaHtml = contratada && cobranca ? formatBrl(cobranca.valorBrl) : "—";
+
+              tr.innerHTML =
+                "<td>" + formatDate(item.candidatouEm) + "</td>" +
+                "<td>" + escapeHtml(item.nome) + "<br><small>" + escapeHtml(item.email) + "</small>" + contato + "</td>" +
+                "<td>" + escapeHtml(item.titulo) + "<br><small>" + escapeHtml(item.empresa) + "</small></td>" +
+                "<td>" + (STATUS_LABELS[item.status] || item.status) + "</td>" +
+                "<td>" + taxaHtml + "</td>" +
+                "<td></td>";
+
+              var cell = tr.lastElementChild;
+
+              if (!contratada) {
+                cell.textContent = "—";
+              } else if (pago) {
+                var pagoTag = document.createElement("span");
+                pagoTag.className = "pagamento-tag pagamento-tag--pago";
+                pagoTag.textContent = "Pago";
+                cell.appendChild(pagoTag);
+              } else {
+                var btnPagar = document.createElement("button");
+                btnPagar.type = "button";
+                btnPagar.className = "btn btn-small";
+                btnPagar.textContent = "A pagar";
+                btnPagar.title = "Registrar pagamento da taxa de contratação";
+                btnPagar.addEventListener("click", function () {
+                  if (!window.confirm("Confirmar o pagamento da taxa de contratação (" + formatBrl(cobranca.valorBrl) + ")?")) return;
+                  pagarCobranca(item._id, btnPagar);
+                });
+                cell.appendChild(btnPagar);
+              }
+
+              tbody.appendChild(tr);
+            });
+          })
+          .catch(function () {
+            showFeedback("Erro de conexão ao carregar candidaturas.", "erro");
+          });
+      }
+
+      filtroStatus.addEventListener("change", loadCandidaturas);
+      document.getElementById("btn-reload").addEventListener("click", loadCandidaturas);
+
+      loadCandidaturas();
+    })();
+  </script>
+  <script src="js/admin-common.js?v=1"></script>
+  <script src="js/site-brand.js?v=2"></script>
+  <script src="js/app-shell.js?v=23"></script>
+  <script src="js/a11y-bar.js?v=1"></script>
+</body>
+</html>
