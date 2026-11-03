@@ -14,6 +14,8 @@ SITE_PATHS=(
   /entrar.html
   /cadastro_50.html
   /entrar_50.html
+  /recuperar_senha.html
+  /redefinir_senha.html
   /area_50.html
   /emprego_50.html
   /cursos_50.html

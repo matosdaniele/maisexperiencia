@@ -58,6 +58,8 @@
     "cadastro_50.html": true,
     "cadastro_parceiro.html": true,
     "ativar_parceiro.html": true,
+    "recuperar_senha.html": true,
+    "redefinir_senha.html": true,
   };
 
   function isAuthEntryPage() {

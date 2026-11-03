@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Recuperar senha por e-mail — Mais Experiência">
+  <title>Recuperar senha — Mais Experiência</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app-page.css?v=35">
+  <link rel="stylesheet" href="css/a11y-bar.css?v=14">
+  <script src="js/site-config.js"></script>
+  <script src="js/app-common.js?v=12"></script>
+  <script src="js/analytics.js?v=4"></script>
+</head>
+<body>
+  <main class="wrap">
+    <a class="back-link" id="back-link" href="entrar.html">← Voltar</a>
+    <h1 id="titulo">Recuperar senha</h1>
+    <p class="lead" id="lead">Escolha a conta para receber o link de redefinição por e-mail.</p>
+
+    <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+
+    <div class="entrar-opcoes" id="escolha-perfil">
+      <a class="entrar-opcao" href="recuperar_senha.html?perfil=50">
+        <span class="entrar-opcao-titulo">Conta 50+</span>
+        <span class="entrar-opcao-texto">Enviar o link para o e-mail do cadastro 50+.</span>
+      </a>
+      <a class="entrar-opcao" href="recuperar_senha.html?perfil=parceiro">
+        <span class="entrar-opcao-titulo">Conta de parceiro</span>
+        <span class="entrar-opcao-texto">Enviar o link para o e-mail da empresa parceira.</span>
+      </a>
+    </div>
+
+    <form id="form-recuperar" novalidate hidden>
+      <div>
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" autocomplete="email" required>
+      </div>
+      <button type="submit" class="btn" id="btn-enviar">Enviar link</button>
+    </form>
+  </main>
+
+  <script src="js/recuperar-senha.js?v=1"></script>
+  <script src="js/site-brand.js?v=2"></script>
+  <script src="js/public-page-shell.js?v=3"></script>
+  <script src="js/a11y-bar.js?v=1"></script>
+</body>
+</html>

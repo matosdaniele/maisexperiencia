@@ -15,6 +15,7 @@ const {
   sendParceiroRejeicao,
   sendContratacaoAdmin,
   sendLembreteMedicacao,
+  sendRecuperacaoSenha,
 } = require("./mail");
 const {
   isTelegramConfigured,
@@ -41,6 +42,7 @@ const {
   createSession,
   extractSessionToken,
   validateSession,
+  revokeSessionsForAccount,
 } = require("./session-auth");
 const {
   isOpenRouterConfigured,
@@ -143,7 +145,10 @@ async function connectDb() {
   await db.collection("match_candidato_cache").createIndex({ email: 1, vagaId: 1 }, { unique: true });
   await db.collection("match_ranking_cache").createIndex({ vagaId: 1, escopo: 1 }, { unique: true });
   await db.collection("sessoes").createIndex({ token: 1 }, { unique: true });
+  await db.collection("sessoes").createIndex({ email: 1, tipo: 1 });
   await db.collection("sessoes").createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+  await db.collection("contas").createIndex({ resetTokenHash: 1 }, { sparse: true });
+  await db.collection("parceiros").createIndex({ resetTokenHash: 1 }, { sparse: true });
   await db.collection("comunidades").createIndex({ visibilidade: 1, createdAt: -1 });
   await db.collection("comunidades").createIndex({ criadorEmail: 1 });
   await db
@@ -4021,6 +4026,271 @@ app.post("/api/parceiros/ativacao", async (req, res) => {
     perfil: { nome: doc.nome, empresa: doc.empresa, email: doc.email },
   });
 });
+
+const RESET_TTL_MS = 60 * 60 * 1000;
+const RESET_MESSAGE =
+  "Se este e-mail estiver cadastrado, enviaremos um link para redefinir a senha. Verifique também a caixa de spam.";
+const RESET_LINK_INVALIDO =
+  "Link inválido ou expirado. Solicite um novo e-mail de recuperação.";
+const resetRequestLog = new Map();
+
+function pruneResetLog(now) {
+  if (resetRequestLog.size < 500) {
+    return;
+  }
+  resetRequestLog.forEach(function (times, key) {
+    const recent = times.filter(function (t) {
+      return now - t < RESET_TTL_MS;
+    });
+    if (!recent.length) {
+      resetRequestLog.delete(key);
+    } else {
+      resetRequestLog.set(key, recent);
+    }
+  });
+}
+
+function noteResetRequest(key, limit) {
+  const now = Date.now();
+  pruneResetLog(now);
+  const recent = (resetRequestLog.get(key) || []).filter(function (t) {
+    return now - t < RESET_TTL_MS;
+  });
+  if (recent.length >= limit) {
+    resetRequestLog.set(key, recent);
+    return false;
+  }
+  recent.push(now);
+  resetRequestLog.set(key, recent);
+  return true;
+}
+
+function clientIp(req) {
+  const forwarded = String(req.headers["x-forwarded-for"] || "")
+    .split(",")[0]
+    .trim();
+  return forwarded || (req.socket && req.socket.remoteAddress) || "unknown";
+}
+
+function createResetToken() {
+  return crypto.randomBytes(32).toString("hex");
+}
+
+function hashResetToken(token) {
+  return crypto.createHash("sha256").update(String(token)).digest("hex");
+}
+
+function isResetTokenFormat(token) {
+  return /^[a-f0-9]{64}$/.test(token);
+}
+
+function sanitizeDestino(value) {
+  const destino = String(value || "").trim();
+  if (
+    /^(emprego_50|cursos_50|eventos_50|comunidade_50|bem_estar_50|vagas_50)\.html\?id=[a-f0-9]{24}$/i.test(
+      destino
+    )
+  ) {
+    return destino;
+  }
+  return "";
+}
+
+function contaPodeRedefinirSenha(doc) {
+  return Boolean(doc && doc.senhaHash);
+}
+
+function parceiroPodeRedefinirSenha(doc) {
+  return Boolean(doc && doc.status === "activo" && doc.senhaHash);
+}
+
+async function findAccountByResetToken(collection, token) {
+  if (!isResetTokenFormat(token)) {
+    return null;
+  }
+  const doc = await db.collection(collection).findOne({
+    resetTokenHash: hashResetToken(token),
+  });
+  if (!doc || !doc.resetTokenExpires || doc.resetTokenExpires < new Date()) {
+    return null;
+  }
+  return doc;
+}
+
+function buildResetLink(perfil, token, destino) {
+  const siteUrl = process.env.SITE_URL || "https://maisexperiencia.com.br";
+  let link =
+    siteUrl +
+    "/redefinir_senha.html?perfil=" +
+    encodeURIComponent(perfil) +
+    "&token=" +
+    encodeURIComponent(token);
+  if (destino) {
+    link += "&destino=" + encodeURIComponent(destino);
+  }
+  return link;
+}
+
+async function solicitarRecuperacaoSenha(req, res, options) {
+  const email = String(req.body.email || "").trim().toLowerCase();
+  if (!isValidEmail(email)) {
+    res.status(400).json({ ok: false, error: "Informe um e-mail válido." });
+    return;
+  }
+
+  const permitido =
+    noteResetRequest("ip:" + clientIp(req), 20) &&
+    noteResetRequest("email:" + options.perfil + ":" + email, 5);
+  if (!permitido) {
+    res.json({ ok: true, message: RESET_MESSAGE });
+    return;
+  }
+
+  const doc = await db.collection(options.collection).findOne({ email });
+  if (doc && options.podeRedefinir(doc)) {
+    const token = createResetToken();
+    const destino = options.perfil === "50" ? sanitizeDestino(req.body.destino) : "";
+    await db.collection(options.collection).updateOne(
+      { _id: doc._id },
+      {
+        $set: {
+          resetTokenHash: hashResetToken(token),
+          resetTokenExpires: new Date(Date.now() + RESET_TTL_MS),
+        },
+      }
+    );
+
+    try {
+      const result = await sendRecuperacaoSenha({
+        nome: doc.nome,
+        email: doc.email,
+        link: buildResetLink(options.perfil, token, destino),
+        contaLabel: options.contaLabel,
+      });
+      if (!result.sent) {
+        console.error("Recuperação de senha não enviada (" + options.perfil + "):", result.reason);
+      }
+    } catch (err) {
+      console.error("Recuperação de senha:", err.message);
+    }
+  }
+
+  res.json({ ok: true, message: RESET_MESSAGE });
+}
+
+async function consultarRedefinicaoSenha(req, res, options) {
+  const token = String(req.query.token || "").trim();
+  const doc = await findAccountByResetToken(options.collection, token);
+  if (!doc || !options.podeRedefinir(doc)) {
+    res.status(404).json({ ok: false, error: RESET_LINK_INVALIDO });
+    return;
+  }
+  res.json({ ok: true, perfil: options.perfilPublico(doc) });
+}
+
+async function confirmarRedefinicaoSenha(req, res, options) {
+  const token = String(req.body.token || "").trim();
+  const senha = String(req.body.senha || "");
+  const doc = await findAccountByResetToken(options.collection, token);
+  if (!doc || !options.podeRedefinir(doc)) {
+    res.status(404).json({ ok: false, error: RESET_LINK_INVALIDO });
+    return;
+  }
+
+  const senhaCheck = validatePassword(senha);
+  if (!senhaCheck.ok) {
+    res.status(400).json({ ok: false, error: senhaCheck.error });
+    return;
+  }
+
+  let senhaHash;
+  try {
+    senhaHash = await hashPassword(senha);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ ok: false, error: "Não foi possível processar a senha." });
+    return;
+  }
+
+  const updated = await db.collection(options.collection).updateOne(
+    { _id: doc._id, resetTokenHash: hashResetToken(token) },
+    {
+      $set: { senhaHash, senhaUpdatedAt: new Date() },
+      $unset: { resetTokenHash: "", resetTokenExpires: "" },
+    }
+  );
+  if (!updated.matchedCount) {
+    res.status(404).json({ ok: false, error: RESET_LINK_INVALIDO });
+    return;
+  }
+
+  await revokeSessionsForAccount(db, doc.email, options.tipoSessao);
+  res.json({
+    ok: true,
+    message: "Senha redefinida. Entre novamente com a nova senha.",
+    perfil: options.perfilPublico(doc),
+  });
+}
+
+const RECUPERACAO_50 = {
+  collection: "contas",
+  perfil: "50",
+  tipoSessao: "50",
+  contaLabel: "sua conta 50+",
+  podeRedefinir: contaPodeRedefinirSenha,
+  perfilPublico: function (doc) {
+    return { nome: doc.nome, email: doc.email };
+  },
+};
+
+const RECUPERACAO_PARCEIRO = {
+  collection: "parceiros",
+  perfil: "parceiro",
+  tipoSessao: "parceiro",
+  contaLabel: "sua conta de parceiro",
+  podeRedefinir: parceiroPodeRedefinirSenha,
+  perfilPublico: function (doc) {
+    return { nome: doc.nome, empresa: doc.empresa, email: doc.email };
+  },
+};
+
+function guardRecuperacao(handler) {
+  return function (req, res) {
+    Promise.resolve(handler(req, res)).catch(function (error) {
+      console.error(error);
+      if (!res.headersSent) {
+        res.status(500).json({
+          ok: false,
+          error: "Não foi possível concluir o pedido. Tente novamente.",
+        });
+      }
+    });
+  };
+}
+
+app.post("/api/contas/recuperar-senha", guardRecuperacao(function (req, res) {
+  return solicitarRecuperacaoSenha(req, res, RECUPERACAO_50);
+}));
+
+app.get("/api/contas/redefinir-senha", guardRecuperacao(function (req, res) {
+  return consultarRedefinicaoSenha(req, res, RECUPERACAO_50);
+}));
+
+app.post("/api/contas/redefinir-senha", guardRecuperacao(function (req, res) {
+  return confirmarRedefinicaoSenha(req, res, RECUPERACAO_50);
+}));
+
+app.post("/api/parceiros/recuperar-senha", guardRecuperacao(function (req, res) {
+  return solicitarRecuperacaoSenha(req, res, RECUPERACAO_PARCEIRO);
+}));
+
+app.get("/api/parceiros/redefinir-senha", guardRecuperacao(function (req, res) {
+  return consultarRedefinicaoSenha(req, res, RECUPERACAO_PARCEIRO);
+}));
+
+app.post("/api/parceiros/redefinir-senha", guardRecuperacao(function (req, res) {
+  return confirmarRedefinicaoSenha(req, res, RECUPERACAO_PARCEIRO);
+}));
 
 app.get("/api/parceiros/publicacoes", requireParceiroSession, async (req, res) => {
   const email = req.sessionUser.email;

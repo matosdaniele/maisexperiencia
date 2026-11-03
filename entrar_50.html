@@ -32,6 +32,7 @@
       <div>
         <label for="senha">Senha</label>
         <input id="senha" name="senha" type="password" autocomplete="current-password" required>
+        <p class="field-hint"><a class="link-inline" id="link-recuperar-senha" href="recuperar_senha.html?perfil=50">Esqueci minha senha</a></p>
       </div>
       <button type="submit" class="btn" id="btn-entrar">Entrar</button>
     </form>
@@ -69,8 +70,23 @@
         feedback.className = "feedback feedback--" + type;
       }
 
+      var linkRecuperar = document.getElementById("link-recuperar-senha");
+      if (linkRecuperar) {
+        linkRecuperar.href = ME_APP.buildAuthUrl(
+          "recuperar_senha.html?perfil=50",
+          ME_APP.getQueryParam("destino")
+        );
+      }
+
+      var emailParam = ME_APP.getQueryParam("email");
+      if (emailParam) {
+        form.email.value = emailParam;
+      }
       if (ME_APP.getQueryParam("idle") === "1") {
         showFeedback("Sessão encerrada por inatividade (20 minutos). Entre novamente.", "ok");
+      }
+      if (ME_APP.getQueryParam("senha") === "redefinida") {
+        showFeedback("Senha redefinida. Entre com a nova senha.", "ok");
       }
 
       form.addEventListener("submit", function (event) {

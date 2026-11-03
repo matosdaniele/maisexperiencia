@@ -66,10 +66,23 @@ async function revokeSession(db, token) {
   await db.collection("sessoes").deleteOne({ token });
 }
 
+async function revokeSessionsForAccount(db, email, tipo) {
+  const normalized = String(email || "").trim().toLowerCase();
+  if (!normalized) {
+    return;
+  }
+  const filter = { email: normalized };
+  if (tipo) {
+    filter.tipo = tipo;
+  }
+  await db.collection("sessoes").deleteMany(filter);
+}
+
 module.exports = {
   SESSION_TTL_MS,
   extractSessionToken,
   createSession,
   validateSession,
   revokeSession,
+  revokeSessionsForAccount,
 };

@@ -24,6 +24,14 @@ function getFromAddress() {
   return `"${name}" <${email}>`;
 }
 
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 async function sendCadastroConfirmacao({ nome, email }) {
   if (!isSmtpConfigured()) {
     return { sent: false, reason: "smtp_not_configured" };
@@ -285,6 +293,46 @@ async function sendLembreteMedicacao({ email, nome, medNome, dose, instrucoes, h
   return { sent: true };
 }
 
+async function sendRecuperacaoSenha({ nome, email, link, contaLabel }) {
+  if (!isSmtpConfigured()) {
+    return { sent: false, reason: "smtp_not_configured" };
+  }
+
+  const transporter = getTransporter();
+  const nomeTexto = nome || "";
+  const conta = contaLabel || "sua conta";
+  const nomeSeguro = escapeHtml(nomeTexto || "olá");
+  const linkSeguro = escapeHtml(link);
+
+  await transporter.sendMail({
+    from: getFromAddress(),
+    to: email,
+    subject: "Redefinir senha — Mais Experiência",
+    text: [
+      `Olá, ${nomeTexto}!`,
+      "",
+      `Recebemos um pedido para redefinir a senha de ${conta} na Mais Experiência.`,
+      "Se foi você, use o link abaixo. Ele expira em 1 hora.",
+      "",
+      link,
+      "",
+      "Se você não pediu esta alteração, ignore este e-mail. Sua senha continua a mesma.",
+      "",
+      "Dúvidas: contato@maisexperiencia.com.br",
+    ].join("\n"),
+    html: [
+      `<p>Olá, <strong>${nomeSeguro}</strong>!</p>`,
+      `<p>Recebemos um pedido para redefinir a senha de ${escapeHtml(conta)} na <strong>Mais Experiência</strong>.</p>`,
+      "<p>Se foi você, use o link abaixo. Ele expira em 1 hora.</p>",
+      `<p><a href="${linkSeguro}">Criar nova senha</a></p>`,
+      "<p>Se você não pediu esta alteração, ignore este e-mail. Sua senha continua a mesma.</p>",
+      "<p>Dúvidas: contato@maisexperiencia.com.br</p>",
+    ].join(""),
+  });
+
+  return { sent: true };
+}
+
 module.exports = {
   isSmtpConfigured,
   sendCadastroConfirmacao,
@@ -295,4 +343,5 @@ module.exports = {
   sendParceiroRejeicao,
   sendContratacaoAdmin,
   sendLembreteMedicacao,
+  sendRecuperacaoSenha,
 };

@@ -32,6 +32,7 @@
       <div>
         <label for="senha">Senha</label>
         <input id="senha" name="senha" type="password" autocomplete="current-password" required>
+        <p class="field-hint"><a class="link-inline" id="link-recuperar-senha" href="recuperar_senha.html?perfil=parceiro">Esqueci minha senha</a></p>
       </div>
       <button type="submit" class="btn" id="btn-entrar">Entrar</button>
     </form>
@@ -65,6 +66,9 @@
       }
       if (ME_APP.getQueryParam("idle") === "1") {
         showFeedback("Sessão encerrada por inatividade (20 minutos). Entre novamente.", "ok");
+      }
+      if (params.get("senha") === "redefinida") {
+        showFeedback("Senha redefinida. Entre com a nova senha.", "ok");
       }
 
       form.addEventListener("submit", function (event) {
